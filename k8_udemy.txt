@@ -1,0 +1,134 @@
+
+kubectl get rc  ----------------------------->replication controller pod
+kubectl describe rc ------------------------>get more information about rc
+kubectl describe pod pod-name---------->if we want describe pod 
+kubectl scale --replicas=xxx  rc/nginix
+kubectl delete pod podname
+kubectl delete rc/nginx
+
+Deployment
+***********
+kubectl get deployments
+kubectl describe depoyments/nginx-deployments
+kubectl get pods --show-labels ---------------------------------------> each pod lable information
+kubectl exec -it podname --/bin/bash
+kubectl expose depoyment nginx-deployments --type=NodePort  ---> expose deployments
+kubectl get service
+minikube service nginx-deployment --url
+output
+curl outputIP
+
+upgrade image in depoyments
+
+kubectl set image depoyment/nginx-deployment nginx(appname)=nginx:1.17.1(new image)
+kubectl rollout status deployment/nginx-deployment
+kubectl rollout history deployment/nginx-deployment
+kubectl rollout undo deployment nginx-deployment --------------------------- rollout set back---------------undo
+kubctl edit deployment nginx-deployment
+
+service
+*******
+pods inside application use by external called service
+clusterIP ---------------> within cluster access
+nodeport---------------> outside cluster access
+
+kubectl delete service nginx-service
+kubectl get nodes --show-lables
+kubectl get nodes
+minikube --- nodename
+kubectl label nodes minikube disktype:ssd
+
+liveness
+*******
+two types
+i) running command in pod periodically
+
+liveness
+    -exec
+       command
+           initialdelaysecond
+           periodscond: 5
+ii) http request periodic check
+liveness
+   -httpGet
+      path:
+      port:
+      initialdelaysecond: 5
+      timeout: 1
+      periodscond: 5
+
+Readiness
+*********
+Used to detect container is ready to accept traffic
+
+pod life cycle
+************
+pending,
+running,
+successful,
+failed,
+crash.
+
+pods -hooks
+***********
+init container
+post start
+pre stop
+exec
+http
+
+kubectl create secret generic sercetname --from-file=/username.txt --from-file=/dbpass.txt
+
+kubectl create secret generic sercetname --from-litrel=kannan --from-litrel=kana@123
+
+kubectl get secret <secret-name> -o yaml
+kubectl get secret <secret-name> -o json
+
+echo 'basestring' | base64 --decode
+echo 'basestring' | base64 --encode
+
+(kubeDNS)
+kubernetes service based on TWO
+environment variable base
+DNS base
+
+kubeDNS is a database , containing a key value pair for lookup
+keys are name of services and IP address on which those running services
+
+dp pod login
+kubectl exec database -it -- mysql -u root -p
+
+
+ingress
+ingress is a object .its allow access kubernetes service from outside the cluster 
+ 
+
+
+
+
+
+
+
+         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+

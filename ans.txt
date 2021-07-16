@@ -1,0 +1,614 @@
+ansible windows
+ ansible UBDNPDWFISFS02.FISCLIENT.LOCAL -i windows_hosts  -m win_shell -a "echo %HOMEDIR%"
+1004    ansible UBDNPDWFISFS02.FISCLIENT.LOCAL -i windows_hosts  -m win_shell -a ""D:\PO_Web\Scripts\URL_Check\Envs\urltest_SIT2.ps1"
+1005    ansible UBDNPDWFISFS02.FISCLIENT.LOCAL -i windows_hosts  -m win_shell -a "D:\PO_Web\Scripts\URL_Check\Envs\urltest_SIT2.ps1"
+1006    less windows_hosts
+1007    less windows_hosts
+1008    ansible -i windows_hosts all -m win_ping
+
+
+ansible install on binarys
+
+ansible-2.9.2-1.el7.noarch
+
+        python-httplib2 is needed by ansible-2.9.2-1.el7.noarch
+        python-jinja2 is needed by ansible-2.9.2-1.el7.noarch
+        python-paramiko is needed by ansible-2.9.2-1.el7.noarch
+        python2-cryptography is needed by ansible-2.9.2-1.el7.noarch
+        python2-jmespath is needed by ansible-2.9.2-1.el7.noarch
+        sshpass is needed by ansible-2.9.2-1.el7.noarch
+
+some time 
+-rwxr-xr-x 1 e5460103 cs 18166427 Jan 28  2020 ansible-2.9.2-1.el7.noarch.rpm
+python-httplib2-0.9.2-1.el7.noarch.rpm
+python2-jmespath-0.9.0-1.el7.noarch.rpm
+ 2020 sshpass-1.05-1.el7.rf.x86_64.rpm
+ python-paramiko-2.1.1-9.el7.noarch.rpm
+PyYAML-3.10-11.el7.x86_64.rpm
+     libyaml-0.1.4-11.el7_0.x86_64.rpm
+python-jinja2-2.7.2-4.el7.noarch.rpm
+   python-markupsafe-0.11-10.el7.x86_64.rpm
+   python-babel-0.9.6-8.el7.noarch.rpm
+
+ansible $Server -m script -a "/data/ansible/scripts/wasrestart.sh $i" -i /data/ansible/dnss_hosts
+FIS.EMEA.Non.Prod.App.Support@fisglobal.com
+
+usermod -a -G ansible username
+
+ssh-copy-id -i ~/.ssh/id_rsa.pub user@host
+
+/etc/ansible/hosts
+
+localhost ansible_connection=local
+
+ansible -version
+ 
+ansible -list-hosts all ---- ansible -list-hosts "*"
+
+ansible -list-hosts loadbalacer
+ansible -list-hosts web
+ansible -list-hosts db
+ansible -list-hosts aaa.com
+
+other file like work to hosts
+
+ansible -i dev(file name)  -list-host all 
+
+/etc/ansible/hosts
+control ansible_connection=local -------------> without ssh using local
+we can mention host file also asible.cfg
+
+Tasks:
+-------
+ansible -m ping all
+ansible -m "hostname" all
+***********************************************************************************************************************************************************************
+---
+  -hosts: all
+   tasks:
+      - command: hostname
+***********************************************************************************************************************************************************************
+---
+  -hosts: all
+   tasks:
+   become: true -----------------------------------( become sudo usage prvillage)
+    - name : install ngnix
+      apt : name = ngnix state=present update_cache=yes
+********************************************************************************************************************************************************
+ with_items:
+---
+  -hosts: all
+   tasks:
+   become: true
+    - name : install ngnix
+      apt : name = ngnix state=present update_cache=yes
+      with_items:
+         appach2
+         myql
+         python
+         
+***************************************************************
+services
+---
+  -hosts: all
+   tasks:
+   become: true
+    - name : install ngnix
+      apt : name = ngnix state=present update_cache=yes
+    
+    - name : ensure ngnix restarted
+      service=ngnix state=started enabled=yes
+***********************************************************************
+curl
+---
+  -hosts: all
+   tasks:
+   become: true
+    - name : install ngnix
+      apt : name = ngnix state=present update_cache=yes
+      with_items:
+         curl
+-----------------------
+curl lbo1 ------------------ like--------------- curl -q0 http://lbo1 | less
+********************************************************************************************
+stack stop & start
+-------------------
+---
+  -hosts: loadbalancer
+   become : true
+   tasks:
+    - services name= ngnix state=stopped
+
+  -hosts: webserver
+   become : true
+   tasks:
+    - services name= apache2 state=stopped
+
+
+  -hosts: db
+   become : true
+   tasks:
+    - services name= mysql state=restarted
+
+  -hosts: webserver
+   become : true
+   tasks:
+    - services name= ngnix state=started
+
+  -hosts: loadbalancer
+   become : true
+   tasks:
+    - services name= ngnix state=started
+-------------------------------------------------------------
+handlers -special type of task
+---------
+---
+  - hosts: webserver
+    become: true
+    tasks:
+      - name: install webcomponents
+        apt: name= {{item}} state=present update_cache=yes
+        with_items:
+           - apache2
+ 	   - libapache2-mod-wsgi
+           - python-pip
+           - python-virtualenv
+
+      - name: ensure apache2 started
+        service name=apache2 state=started enabled=yes
+   
+      - name: ensure mod_wsgi enabled
+        apache2_module: state=present name=wsgi
+        notify restart apache2
+      
+     handlers:
+       - name: restart apache2
+         service: name=apache2 state=restarted
+
+---------------------------------------------------------------------------
+remote server copy abort need to be install below package on this server
+
+yum list installed libselinux-python
+yum install libselinux-python
+
+file copy
+---------
+---
+  - hosts: webserver
+    become: true
+    tasks:
+      - name: install webcomponents
+        apt: name= {{item}} state=present update_cache=yes
+        with_items:
+           - apache2
+ 	   - libapache2-mod-wsgi
+           - python-pip
+           - python-virtualenv
+
+      - name: ensure apache2 started
+        service name=apache2 state=started enabled=yes
+   
+      - name: ensure mod_wsgi enabled
+        apache2_module: state=present name=wsgi
+        notify restart apache2
+      
+      - name: copy demo app source
+        copy: src=/demo/app  dest=/var/www/demo mode=0755
+        notify: restart appache2
+
+      - name: copy virtual host config
+        copy: src=/demo/demo.conf dest=/etc/apache2/sites-available mode=0755
+        notify: restart appache2
+      
+     handlers:
+       - name: restart apache2
+         service: name=apache2 state=restarted
+--------------------------------------------------------------------------------
+pip module
+-----------
+---
+  - hosts: webserver
+    become: true
+    tasks:
+      - name: install webcomponents
+        apt: name= {{item}} state=present update_cache=yes
+        with_items:
+           - apache2
+ 	   - libapache2-mod-wsgi
+           - python-pip
+           - python-virtualenv
+
+      - name: ensure apache2 started
+        service name=apache2 state=started enabled=yes
+   
+      - name: ensure mod_wsgi enabled
+        apache2_module: state=present name=wsgi
+        notify restart apache2
+      
+      - name: copy demo app source
+        copy: src=/demo/app  dest=/var/www/demo mode=0755
+        notify: restart appache2
+
+      - name: copy virtual host config
+        copy: src=/demo/demo.conf dest=/etc/apache2/sites-available mode=0755
+        notify: restart appache2
+
+      - name: setup python virtaulenv
+        pip: requirements=/var/www/demo/rquirements.txt virtualenv=/var/www/demo/.venv
+        notify: restart appache2
+      
+     handlers:
+       - name: restart apache2
+         service: name=apache2 state=restarted
+------------------------------------------------------------------------------
+file
+---------
+---
+  - hosts: webserver
+    become: true
+    tasks:
+      - name: install webcomponents
+        apt: name= {{item}} state=present update_cache=yes
+        with_items:
+           - apache2
+ 	   - libapache2-mod-wsgi
+           - python-pip
+           - python-virtualenv
+
+      - name: ensure apache2 started
+        service name=apache2 state=started enabled=yes
+   
+      - name: ensure mod_wsgi enabled
+        apache2_module: state=present name=wsgi
+        notify: restart apache2
+      
+      - name: copy demo app source
+        copy: src=/demo/app  dest=/var/www/demo mode=0755
+        notify: restart appache2
+
+      - name: copy virtual host config
+        copy: src=/demo/demo.conf dest=/etc/apache2/sites-available mode=0755
+        copy: src=/tmp/source/WebCsr10000.txt dest=/tmp/desting mode=0755
+
+        notify: restart appache2
+
+      - name: setup python virtaulenv
+        pip: requirements=/var/www/demo/rquirements.txt virtualenv=/var/www/demo/.venv
+        notify: restart appache2
+
+      - name: deactivate default apache site
+        file: path=/etc/apache2/000-defaults.conf state=absent -------- (delete)
+        notify: restart appache2
+
+      - name: activate demo apache site
+        file: src=/etc/apache2/sites-available/demo.conf dest=/etc/apache2/sites-enabled/demo.conf state=link -------- (create)
+        notify: restart appache2
+      
+     handlers:
+       - name: restart apache2
+         service: name=apache2 state=restarted
+-----------------------------------------------------------------------------------------------
+
+ansible valut
+************
+ansible-valut  create valut.pass.yml       ------------  ansible-valut encrypt valut.pass.yml
+New valut password: abc@123
+confirm new valut password: abc@123
+
+ansible-valut view valut.pass.yml   ---- put the password then able to view file 
+ansible-valut edit valut.pass.yml 
+
+if need decrypt
+ansible-valut decrypt valut.pass.yml
+
+--ask-valut-pass: to provide password through while runing playbook
+--valut-password-file: to pass a valut password through a file.
+
+realtime valut exampe
+---
+  - name: ansibe playbook to test ansible vault
+    hosts: all
+    var_files:
+          - valut.pass.yml
+    tasks:
+      - name: clone a repo
+        git:
+          repo: https://username: {{ password }}@githup/yankills/valut.git
+          dest: /opt/yankills/
+
+------------------------------------------------------------------------------------------------------------------------------------------
+vi valut.pass.yml
+
+password: abc@123
+
+pass.yml
+abc@123
+
+ansible-palybook -i hosts ansible-valut.yml --ask-valut.pass
+ansible-palybook -i hosts ansible-valut.yml --vault-password-file pass.yml
+
+aws instance creation
+---------------------------
+ - name: ec2 instance provision
+   ec2:
+         key_name: aws key pair name
+         region: us-west_2
+         instance_type: t2.micro
+         image: ami-77e4f16
+         wait: yes
+         wait_timeout: 500
+         count: 1
+         instance_tags:
+            Name: webserver
+            Owner: kannan
+         monitoring: no
+         vpc_subnet_id :  subnetid
+         assign_public_ip: yes
+         group: kannan_aws_security_grp
+   register: ec2_out
+
+ - name: wait for ssh come up
+   wait_for : host ={{ item.public_dns_name }} port=22 delay=60 timeout=320 state=started
+   with_item: '{{ ec2_out.instances }}'
+
+******************************************************************************************************************
+4
+--------------------
+ROLES
+------
+ansible-galaxy init control
+tasks ----------main.yml ---------- it's main file in roles
+include -- one playbook include another one play
+
+ansible -m setup db01(host) ---------->we will get gathering facts----------> all information about db01
+host ={ansible.eth0.ipv4.address}
+
+
+
+sites.yml
+
+---
+ - include: control.yml
+ - include: database.yml
+ - include: webserver.yml
+ - include: loadbalancer.yml
+--------------------------------------------------------------
+
+  - name: create user
+    mysql_user: name={{ db_user_name }} password={{ db_user_pass }} priv={{ db_name }}.* host={{ db_user_host }}* state=present
+
+roles --mysql--main.yml
+---
+  db_name= myapp
+  db_user_name= dbuser
+  db_user_pass= dbpass
+  db_user_host= localhost
+
+
+roles--vars--main.yml
+
+   vars: we can directly call
+
+---
+ hosts: database
+ become: true
+ roles
+  - ( role: mysql, db_user_name: demo,db_user_pass: demo,db_user_host:"%") 
+      
+---------------------------------------------------------------------------------------
+bash shell commands
+------------------------
+---
+ - name : get active sites
+   shell: ls -l /etc/nginx/sites-enabled
+   register: active
+    
+  - name : deactive sites
+    file: path=/etc/nginx/sites-enabled/defaults state=absent
+    with_items: active.stdout_lines
+    notify: restart nginx
+
+ansibel_vault create vault
+password:
+
+---
+vault_db_pass: hjcwuifbibcwyfb
+
+not able to run yaml without password
+echo "masteringansible" > ~/.vault_pass.txt
+
+mention
+ansible.cfg
+
+vault_password_file = ~/.vault_pass.txt
+
+able to run yaml
+
+ansible galaxy init mysql
+
+
+
+
+_________________________________-----------------------------------
+
+gather_facts: false ---------- quick xecution
+limit - except
+
+ansible-playbook sites.yml --limit app01
+
+tags
+----
+
+ansile-playbook site.yml --list-tags
+
+ansile-playbook site.yml --skip-tags "packages"
+
+- name: ensure mod_wsgi enabled
+        apache2_module: state=present name=wsgi
+        notify: restart apache2
+        tags: ['restart']
+
+
+changed_when: false -- error msg dont show execute the task (boolean--- true or false)
+
+
+ansible.cfg
+{ssh connection}
+pipelining=yes
+
+sudoers file
+defaults !requirettty
+
+
+
+
+- name: UI3 start
+  shell: ./startServer.sh server1
+  args:
+    chdir: /opt/IBM/WebSphere/AppServer/profiles/UI3/bin
+  tags: ['UI3']
+
+
+ - name: UI3 start
+  shell: ps -ef | grep UI2 | awk '{print $2}' warn=false
+  register: UiOuptput
+  failed_when: UiOuptput != 0 
+  ignore_errors: true
+   shell: ./startServer.sh server1
+   args:
+      chdir: /opt/IBM/WebSphere/AppServer/profiles/UI3/bin
+   tags: ['UI3']
+
+
+bash
+-----
+dev_script
+
+  - name: Check if Service Exists
+    shell: "ps -ef | grep -v grep | grep UI2 | wc -l; then echo running;   else echo stoped; fi;"
+    register: service_exists
+
+shell:"ps -ef | grep -v grep | grep UI2 | wc -l; then echo running;   else echo stoped; fi;"
+./startServer.sh server1
+
+shell: "if chkconfig --list | grep -q my_service;   then echo true;   else echo false; fi;"
+
+
+ps -ef | grep -v grep | grep UI2 | wc -l -gt 0
+
+
+https://stackoverflow.com/questions/30328506/check-if-service-exists-with-ansible
+
+  - name: Check if Service Exists
+    shell: "if chkconfig --list | grep -q my_service;   then echo true;   else echo false; fi;"
+    register: service_exists
+
+- name: Stop Service
+    service: name={{service_name}} state=stopped
+    when: service_exists
+    register: service_stopped
+
+
+service running check then start
+https://serverfault.com/questions/671030/ansible-restart-service-only-if-it-was-running
+---
+# handles tomcat8
+- name: is tomcat8 already running?
+  shell: service tomcat8 status warn=false
+  register: _svc_tomcat8
+  failed_when: _svc_tomcat8.rc != 0 and ("unrecognized service" not in _svc_tomcat8.stderr)
+  ignore_errors: true
+
+- name: restart tomcat8 if running
+  service: name=tomcat8 state=restarted
+  when: "_svc_tomcat8.rc == 0"
+
+
+-sh-4.1$ cat was_Cleanrestart.sh
+#!/bin/sh
+
+PROFILE=/websphere/v855/AppServer/profiles/$1
+$PROFILE/bin/stopServer.sh server1
+rm -rf $PROFILE/wstemp/*
+rm -rf $PROFILE/temp/*
+rm -rf $PROFILE/config/temp/*
+sleep 5
+$PROFILE/bin/startServer.sh server1
+
+
+
+
+
+
+diskusage
+
+[e5460103@lsbprffisblr01 scripts]$ cat diskmonit.sh
+#!/bin/bash
+
+
+######  DISK usage monitoring  script for  DEV environment
+
+
+
+ df -Ph | grep -vE '^Filesystem|tmpfs|cdrom' |awk '{printf "%-45s%-10s%-10s%-10s%-5s%s\n",$1,$2,$3,$4,$5,$6}'| awk '{ print $5" " $1 }' | while read output;
+
+do
+
+
+  result=$(echo $output | awk '{ print $1}' | cut -d'%' -f1  )
+
+ dname=$(echo $output | awk '{ print $2 }' )
+
+  if [ $result -ge 90 ]; then
+
+echo $(hostname)  is \ "Running out of space on partition    \"$dname ($result%)\"  \ as on $(date)" >/home/e5460103/scripts/disk
+
+mailx -S smtp=smarthost.fisglobal.com  -r EMEA.Non.Prod.App.Support.BB@fisglobal.com  -s Alert  -v FIS.EMEA.Non.Prod.App.Support@fisglobal.com  </home/e5460103/scripts/disk
+
+
+ fi
+done
+
+
+
+
+websphere
+
+ - name: Install Installation Manager
+      ibmim_installer:
+        src: /tmp/im/agent.installer.linux.x86_64-latest.zip
+dfmonit
+
+
+df -H | grep -vE '^Filesystem|tmpfs|cdrom' | awk '{ print $5 " " $1 }'|column -t    >/home/e5460103/scripts/diskusage
+
+mailx -S smtp=smarthost.fisglobal.com  -r EMEA.Non.Prod.App.Support.BB@fisglobal.com  -s "Disk usage details for lsbprffisblr01.fnfis.com ( 10.74.210.36 )"  -v FIS.EMEA.Non.Prod.App.Support@fisglobal.com  </home/e5460103/scripts/diskusage
+
+
+
+
+
+deletion scripts
+#!/bin/bash
+
+ls -lrt /tmp/test head -n -4| xargs rm -r
+
+
+roles
+======
+
+Roles are ways of automatically loading certain vars_files, tasks, and handlers based on a known file structure. Grouping content by roles also allows easy sharing of roles with other users
+
+tasks - contains the main list of tasks to be executed by the role.
+handlers - contains handlers, which may be used by this role or even anywhere outside this role.
+defaults - default variables for the role (see Using Variables for more information).
+vars - other variables for the role (see Using Variables for more information).
+files - contains files which can be deployed via this role.
+templates - contains templates which can be deployed via this role.
+meta - defines some meta data for this role. See below for more details.
+
+cp /opt/IBM/WebSphere/AppServer/profiles/UI2/installedApps/lsbtpfisblr01Node04Cell/WebCSR-*/WebCSR-*/WEB-INF/configuration.properties /tmp/
+[ui2@lsbtpfisblr01 WEB-INF]$ ls -lrt /tmp/
+
+
+

@@ -1,0 +1,128 @@
+SINGLE USER MODE
+---------------------
+Red Hat Enterprise Linux 6 - Rebuild a Deleted or Missing /etc/inittab
+Issue
+After reboot, the systems shows an error message telling us that the /etc/inittab file is lost, deleted, misconfigured or missed.
+
+Solution
+Boot the system using the Rescue Mode. To do that, the user needs the Red Hat boot CD/DVD and select Rescue mode in the boot menu.
+
+Make the /mnt/sysimage as the root environment:
+
+# chroot /mnt/sysimage
+
+Mount the CD/DVD image:
+
+# mkdir /media/cd-rom
+
+# mount -t iso9660 /dev/cd-rom /media/cd-rom
+
+NOTE: You could have another path to the CD-ROM device, please, take a note on this to fit the right path to your cd-rom device.
+The RPM package which contains the /etc/inittab file is:
+
+# rpm -qpil /media/cd-rom/Packages/initscripts-9.03.17-1.el6.x86_64.rpm | grep inittab
+
+NOTE: You could have a different version of this RPM package, but his contents are the same.
+Extract the files of this package without installing it:
+
+# mkdir /tmp/initscripts-fixed
+
+# cd /tmp/initscripts-fixed
+
+# rpm2cpio /media/cd-rom/Packages/initscripts-9.03.17-1.el6.x86_64.rpm | cpio -idmv
+
+Test if the files have been extracted without issues:
+
+# pwd
+
+/tmp/initscripts-fixed
+
+# ls -ltr
+
+Restore the files the user needs (in this case, the /etc/inittab file):
+
+# cp ./etc/inittab /etc
+
+Check the user rights of the file restored (they should be 644):
+
+# ls -ltr /etc/inittab
+
+-rw-r--r-- 1 root root 884 Jun 17 09:44 /etc/inittab
+
+Reboot the server and check if the system recognizes the /etc/inittab file:
+
+# exit
+Redhat subcription.
+---------------------
+Now re-register the system, attach the subscriptions - execute these commands :
+
+sudo subscription-manager register
+sudo subscription-manager refresh
+sudo subscription-manager attach --auto
+
+Execute sudo subscription-manager repos --list-enabled to see all actually enabled subscriptions.
+Execute sudo subscription-manager repos --list to see all subscriptions that are available for you.
+Execute sudo subscription-manager repos --enable <repo> if you want to add additional repos.
+
+
+https://www.golinuxcloud.com/configure-pxe-boot-server-centos-redhat-7-linux/
+
+Pxe boot configuration
+
+
+https://www.fosslinux.com/7705/how-to-install-and-configure-zabbix-on-centos-7.htm
+zabbix server configurtion
+
+keytool using ssl certificate maintianed
+https://dzone.com/articles/understand-java-keytool-keystore-commands
+keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepass password -validity 360 -keysize 2048
+keytool -list -v -keystore keystore.jks -alias mydomain
+------------------------------------------------------
+keytool -genkey -alias server -keyalg RSA -keysize 2048 -keystore your_site_name.jks
+
+keytool -certreq -alias server -file csr.txt -keystore your_site_name.jks
+
+keytool -import -alias server -file your_site_name.p7b -keystore your_site_name.jks
+
+keytool -list -v -keystore keystore.jks -alias mydomain
+
+
+jmap jstack
+
+jmap -dump:format=b,file=/opt/tmp/heapdump.bin 37320
+jstack -l  <pid> > <file-path>
+jstack -l 37320 > /opt/tmp/threadDump.txt
+
+LVM
+-----
+https://www.tecmint.com/lvm-storage-migration/
+
+vgextend tecmint_vg /dev/sda1 -- nev pv add to existing group
+ Now it’s time to do migration using Mirroring method, use ‘lvconvert‘ command to migrate data from old logical volume to new drive.
+
+4. Before migrating, make sure to confirm the names of logical volume and volume group for which physical volume is related to and also confirm which physical volume used to hold this volume group and logical volume.
+
+# lvs
+# vgs -o+devices | grep tecmint_vg
+
+pvcreate /dev/sda1 -v
+vgextend tecmint_vg /dev/sda1
+vgs
+
+vgdisplay tecmint_vg -v ----- To get the full list of information about volume group use ‘vgdisplay‘ command.
+
+lvconvert -m 1 /dev/tecmint_vg/tecmint_lv /dev/sda1
+
+Once you sure that the converted mirror is perfect, you can remove the old virtual disk vdb1. The option -m will remove the mirror, earlier we’ve used 1 for adding the mirror.
+
+lvconvert -m 0 /dev/tecmint_vg/tecmint_lv /dev/vdb1
+
+
+vgreduce /dev/tecmint_vg /dev/vdb1
+
+
+kernel updation
+================
+https://www.tecmint.com/install-upgrade-kernel-version-in-centos-7/
+https://www.linux.com/tutorials/how-compile-linux-kernel-0/ ---- tarball install 
+

@@ -1,0 +1,496 @@
+https://updates.jenkins-ci.org/download/plugins/poll-mailbox-trigger-plugin/     jenkin repo
+
+102352844883
+CI -- overview
+
+git
+
+Set your username:
+git config --global user.name "FIRST_NAME LAST_NAME"
+
+Set your email address:
+git config --global user.email "MY_NAME@example.com"
+
+ mail notification
+manage jenkins----configure system---extended email notification
+
+smtp server: uksmarthost1.fisglobal.com
+Default Content Type: plaintext
+default recipiatns: kannan.murugaiah@fisglobal.com
+Default Subject: $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!
+Default Content: $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
+                           Check console output at $BUILD_URL to view the results.
+
+email notification: 
+smtp server: uksmarthost1.fisglobal.com
+
+post buid Action:
+email notification: 
+
+project email recepicent : $DEFAULT_RECIPIENTS
+Project Reply-To List: $DEFAULT_REPLYTO
+Content Type: default content
+Default Subject: $DEFAULT_SUBJECT
+Default Content:$DEFAULT_CONTENT
+
+
+git init 
+git add .
+git status
+git commit -m "stage to repo'
+
+git remot add orgin master "http:www.urlllllllllllllllll.com"
+
+git pull orgin master 
+git push orgin master 
+git branch ------- list 
+git branch devlop ------ create new
+git checkout devlop --- switch to new branch
+git push master ----- devlop branch datas goes to master 
+
+goto master branch
+git merge devlop ---- devlop merge with master 
+
+git add . ----- work to stage
+reset
+=========
+git diff 
+stage to work 
+-------------
+git reset HEAD filename ( aaa.txt )
+git reset --hard HEAD (all changes)
+
+
+git restore --staged Chart.yaml
+git restore --staged values.yaml
+git restore --staged requirements.yaml
+
+
+
+stage to repo
+-------------
+git log 
+git reset HEAD~ last commit revert 
+
+
+git clone (ssh url -- copy from git hup repo)
+
+git rm -r filename
+git mv filename filename.new
+git mv /root/file /root/git/file
+
+git log --oneline --graph decorate
+git log --since=2 "2 days ago"
+git log -- testfile.txt --- particular file log 
+git show ( log id ) whatever action we got 
+git help log --- more help
+
+git config --global alisas.history "git --log --graph --decorate --oneline" -------> git history
+
+git branch -a ---> breif about branch
+git branch -m devlop dev ------- chnge name devlop to dev
+git branch -d dev --- need to befor swith anthor branch (like master ) --- delete branch
+
+
+same file edited master and develop
+
+-----> master 
+viowviwvouw
+--------> devlop
+vjfjifjfkf
+_______________ we can take the decision
+
+merging create extra commit 
+rebase not create extra commit 
+
+dev branch join master is merge ---- fast forward
+master branch join dev rebase  -----  rebase history commit is top master is second
+
+maven
+=======
+POM ---- Project Object Module
+
+clean, validate, compile, package, test, build , deploy
+
+JDK must installed.
+
+
+
+
+jenkins
+=========
+GitHub webhooks
+
+
+
+fork
+
+click avathar ------- settings ------ developersettings--- personal access tokens----jenerate new token
+mention tocken name : jenkins
+enable admin/repo_hook
+
+click jenerate tocken --- copy api key 
+
+jenkins--manage jenkins--configuresystem ---- githupserver 
+
+name :githup
+apiurl: leave it default (https://api.githup.com)
+credetials:add
+kind: secret text
+secret:(((((git_hup_api_key))))
+id : githup_key
+description:GithupKey
+
+manage hooks need to be enable 
+
+Build Triggers
+
+enable Githup hook trigger for GITScm pollling
+ 
+important plugins
+======================
+
+copy artifacts
+deploy to container
+build pipeline
+
+for docker 
+docker build and publish
+
+
+
+
+deploy user - deploy
+
+manage jenkins
+plughins
+
+publish over ssh
+
+manage jenkins ---- configure system ---- publish over ssh
+
+
+build
+-------
+build pipeline
+pipeline {
+      agent any
+      stages {
+            stage('Init') {
+                  steps {
+                        echo 'Hi, this is Anshul from LevelUp360'
+                        echo 'We are Starting the Testing'
+                  }
+            }
+            stage('Build') {
+                  steps {
+                        echo 'Building Sample Maven Project'
+                  }
+            }
+            stage('Deploy') {
+                  steps {
+                        echo "Deploying in Staging Area"
+                  }
+            }
+            stage('Deploy Production') {
+                  steps {
+                        echo "Deploying in Production Area"
+                  }
+            }
+      }
+}
+
+ssh servers
+name : staging
+hostname : 10.74.210.37 ---------- webserver
+username :
+remote directory:/
+
+if we need another one click add option
+
+main page ---------- credentials ------ jenkins scoped ------- add credentials
+username    : deploy
+password    : xxx jenkins
+id          : webserver_login
+description : whatever
+
+mainpage ----- newitem ------ enter new item name 
+
+Branchsourcs
+githup
+credential ----- add 
+username : git hup user name 
+password : git hup api key
+owner    : git hup user name 
+repository :(git hup repo name )cicd pipeline-train-schedule/e-cid
+once save ---- automaticaly scan our repo
+
+
+goto githup 
+
+edit jenkins file 
+
+commit git hup
+
+deploy production -- ok then deploy production
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Fully Automated deployment
+----------------------------
+
+Manage jenkins---configure system---
+environment variables 
+--global properties
+Name  : KUBE_MASTER_IP
+Value : 34.221.23.240 (kube master server public ip)
+
+GitHub
+
+Github servers : add github server
+name    : GitHub
+Api URL : https;//api.github.com
+credentials : add
+
+kind: secret text
+secret:(((((git_hup_api_key))))
+id : githup_key
+description:GithupKey
+
+enable manage hosts (check box)
+save
+
+manage jenkins --- manage plughin
+advance ---- search par --- HTTP Request --- install restart
+
+jenkinsfile 
+{
+DOCKER_IMAGE_NAME = mskanna/httpd
+
+}
+
+
+mainpage ----- newitem ------ enter new item name 
+
+Branchsourcs
+githup
+credential ----- add 
+username : git hup user name 
+password : git hup api key
+
+( if already existed choose that ) 
+
+owner    : git hup user name 
+repository :(git hup repo name )cicd pipeline-train-schedule/autodeploy
+once save ---- automaticaly scan our repo
+
+
+Docker Deploy with jenkins
+
+pipeline 
+pipeline {
+  environment {
+    registry = "gustavoapolinario/docker-test"
+    registryCredential = ‘dockerhub’
+  }
+  agent any
+  stages {
+    stage('Cloning Git') {
+      steps {
+        git 'https://github.com/gustavoapolinario/microservices-node-example-todo-frontend.git'
+      }
+    }
+    stage('Building image') {
+      steps{
+        script {
+          docker.build registry + ":$BUILD_NUMBER"
+        }
+       stage('Build') {
+            steps {
+                sh 'make' 
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true 
+      }
+
+ stages {
+        stage('Test') {
+            steps {
+                /* `make check` returns non-zero on test failures,
+                * using `true` to allow the Pipeline to continue nonetheless
+                */
+                sh 'make check || true' 
+                junit '**/target/*.xml' 
+    }
+
+stages {
+        stage('Deploy') {
+            when {
+              expression {
+                currentBuild.result == null || currentBuild.result == 'SUCCESS' 
+              }
+            }
+            steps {
+                sh 'make publish'
+            }
+  }
+}
+
+------------------------------------------------------------------------------------------
+
+udemy
+pipeline {
+      agent any
+      stages {
+            stage('Init') {
+                  steps {
+                        echo 'Hi, this is Anshul from LevelUp360'
+                        echo 'We are Starting the Testing'
+                  }
+            }
+            stage('Build') {
+                  steps {
+                        echo 'Building Sample Maven Project'
+                  }
+            }
+            stage('Deploy') {
+                  steps {
+                        echo "Deploying in Staging Area"
+                  }
+            }
+            stage('Deploy Production') {
+                  steps {
+                        echo "Deploying in Production Area"
+                  }
+            }
+      }
+}
+---------------------------------------------------------------------------------------------------------------------------
+
+pipeline {
+    agent any
+    stages {
+        stage('Build Application') {
+            steps {
+                sh 'mvn -f java-tomcat-sample/pom.xml clean package'
+            }
+            post {
+                success {
+                    echo "Now Archiving the Artifacts...."
+                    archiveArtifacts artifacts: '**/*.war'
+                }
+            }
+        }
+        stage('Deploy in Staging Environment'){
+            steps{
+                build job: 'Deploy_Application_Staging_Env'
+ 
+            }
+            
+        }
+        stage('Deploy to Production'){
+            steps{
+                timeout(time:5, unit:'DAYS'){
+                    input message:'Approve PRODUCTION Deployment?'
+                }
+                build job: 'Deploy_Application_Prod_Env'
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+-----
+
+doker.build mskanna/centos.httpd1 ----------- tag name 
+
+
+description
+scm
+build environment
+build
+postbuild action
+
+archive artifacts
+build other projects   ---- copy to container 
+
+
+
+
+orgin_logs
+------
+choice parameter
+servernames
+
+choice extended paramenter
+name : logtype
+parameter type: check box
+number of visible items: 11
+
+choose source for value
+value :  base,dm,jsf,losar-rest,oauth2,cis,dm-rest,losar,losc,sec
+      
+string parameter 
+name :date
+description: enter date in yyyy-mm-dd (2020-12-25)
+
+ 
+build      
+
+if [ -d /data/jenkins/jobs/AB_logs/workspace/$Server ]
+then
+echo "Directory is present"
+else
+echo "Directory is absent"
+mkdir -p /data/jenkins/jobs/AB_logs/workspace/$Server
+fi
+
+logtypes=`echo $Logtype| tr ',' ' '`
+ 
+if [ -z $Date ]
+then
+for i in `echo $logtypes`
+do
+scp $Server:/opt/ORIGO/logs/origo-$i.log /data/jenkins/jobs/AB_logs/workspace/$Server
+done
+
+else
+
+for i in `echo $logtypes`
+do
+scp $Server:/opt/ORIGO/logs/archived/origo-$i.log.$Date* /data/jenkins/jobs/AB_logs/workspace/$Server 2>/dev/null
+
+ssh $Server ls -ltr /opt/ORIGO/logs/archived/origo-$i.log.$Date* 2> /dev/null
+done
+
+fi
+
+import hudson.util.RemotingDiagnostics
+import jenkins.model.Jenkins
+import hudson.Util
+
+if(ENV.equals("ubsppe1")) {
+list = []
+def process = ['/bin/bash', '-c', 'sed -n "/ubsppe1/,/ubsppe2/{//!p;}" /data/ansible/xp_tp_hosts'].execute()
+process.text.eachLine {list.add it}
+return list
+}else if(ENV.equals("ubsppe2")) {
+list = []
+def process = ['/bin/bash', '-c', 'sed -n "/ubsppe2/,//{//!p;}" /data/ansible/xp_tp_hosts'].execute()
+process.text.eachLine {list.add it}
+return list
+}else {
+list = []
+def process = "grep ${ENV} /data/ansible/xp_tp_hosts".execute()| "grep -v ]".execute()
+process.text.eachLine {list.add it}
+return list
+}
+
+
+list = []
+def process = "cat /data/ansible/xp_tp_jvm_name/${Server}".execute()
+process.text.eachLine {list.add it}
+return list

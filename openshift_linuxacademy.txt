@@ -1,0 +1,1041 @@
+redhat subscription
+
+subscription-manager register
+username:
+password:
+
+master 
+
+subscription-manager attach --pool=$(subscription-manager list --available \
+> |grep -A18 "Red Hat enterprise linux server entry level, self-support"\
+>|grep "pool ID" | awk '{print $3}')
+
+subscription-manager attach --pool=$(subscription-manager list --available \
+> |grep -A32 "Red Hat openshift container platform "\
+>|grep "pool ID" | awk '{print $3}')
+
+subscription-manager attach --pool=$(subscription-manager list --available \
+> |grep -A29 "Red Hat OpenStack platform "\|grep -B3 "Unlimited" \
+>|grep "pool ID" | awk '{print $3}')
+
+subscription-manager repos --disable=*
+
+subscription-manager repos --enable=rhel-7-server-rpms \
+> --enable=rhel-7-server-optional-rpms \
+> --enable=rhel-7-server-extras-rpms \
+> --enable=rhel-7-server-ose-3.5-rpms \
+> --enable=rhel-7-server-openstack-10-rpms \
+
+yum repolist 
+yum -y update 
+systemctl reboot ----- kernel update 
+
+node1
+fdisk -l
+
+
+subscription-manager attach --pool=$(subscription-manager list --available \
+> |grep -A29 "Red Hat OpenStack platform "\|grep -B3 "Unlimited" \
+>|grep "pool ID" | awk '{print $3}')
+
+subscription-manager repos --disable=*
+
+subscription-manager repos --enable=rhel-7-server-rpms \
+> --enable=rhel-7-server-optional-rpms \
+> --enable=rhel-7-server-extras-rpms \
+> --enable=rhel-7-server-ose-3.5-rpms \
+> --enable=rhel-7-server-openstack-10-rpms \
+
+
+
+
+
+
+
+
+
+Dnsmasq
+--------
+DNS,TFTP,PXE,router advertisement,DHCP
+
+install packages dnsmasq and bind-utils
+/etc/dnsmasq.conf
+  address=/ocp.lap.example.com/ <node1IP>
+  resolve-file=/etc/resolve.dnsmasq
+
+create /etc/resolve dnsmasq with the following
+nameserver < your gateway IP>
+
+Install :: master and node1::::
+
+edit /etc/resolve.conf
+       search example.com
+       nameserver 127.0.0.1 or 8.8.8.8
+
+add entries to /etc/hosts for master and node1
+     <master IP> master.example.com
+      <node1 IP> node1.example.com
+
+start and enable dnsasq service 
+
+systemctl enable dnsmasq && systemctl start dnsmasq
+verify
+hostanme
+ping masternode ip address
+ping 8.8.8.8
+
+Steps
+master server
+
+yum -y install dnsmasq bind-utils
+
+hostname
+it based add on subdomain
+cp /etc/dnsmasq.conf /home/user/dnsmasq.copy
+
+vi /etc/dnsmasq.conf
+address section we need to edit
+address=/ocp.master.academybytes.com/192.168.10.162          /amurugan1c.mylabserver.com/172.31.44.80
+
+resolvfile section
+resolv-file=/etc/resolv.dnsmasq
+
+save and close
+vi /etc/resolv.dnsmasq
+nameserver 192.168.10.1 <gatewayIP> route -n
+nameserver 172.31.32.1
+
+Save & Close
+
+vi /etc/resolv.conf
+search academybytes.com
+nameserver 127.0.0.1
+
+s&c
+
+systemctl stop firewalld && systemctl disable firewalld
+systemctl enable dnsmasq && systemctl start dnsmasq
+
+vi /etc/hosts
+192.168.10.162 master master.acdemybytes.com        172.31.44.80   master  master.amurugan1c.mylabserver.com
+192.168.10.160 node1  node1.acdemybytes.com         172.31.41.3    node1     node1.amurugan2c.mylabserver.com                
+
+host $(hostname)
+ping master 
+ping 8.8.8.8
+
+Docker setup
+______________
+
+login master server 
+
+ssh __> password less authentication to node1
+
+ssh-keygen -f /root/.sshd/id_rsa -t rsa -N ''
+ssh-copy-id root@node1
+
+master 
+
+yum -y install docker-1.12.6
+
+vim /etc/sysconfig/docker-storage-setup
+DEVS=vdb
+VG=docker-vg
+
+lvmconf --disable-cluster
+
+docker-storage-setup
+
+lvs 
+cat /etc/sysconfig/docker-storage
+
+systemctl enable docker 
+sytemctl start docker 
+
+
+
+
+node1 
+
+yum -y install docker-1.12.6
+
+vim /etc/sysconfig/docker-storage-setup
+DEVS=vdb
+VG=docker-vg
+
+lvmconf --disable-cluster
+
+docker-storage-setup
+
+lvs 
+cat /etc/sysconfig/docker-storage
+
+systemctl enable docker 
+sytemctl start docker 
+
+
+
+KVM setup
+
+Openshift Installation
+
+Master
+
+yum -y install atomic-openshift-docker-excluder atomic-openshift-excluder atomic-openshift-utils bridge-utils bind-utils git iptables-services net-tools wget 
+
+its to be install around 45 packages 
+
+atomic-openshift-excluder unexclude
+
+exact same thing will be install on node1
+
+master 
+
+atomic-openshift-installer install 
+
+Are you ready to continue [y/N]:Y
+User for ssh access [root]:
+which variant would you like to install?
+1 openshift container platform'
+2 registry
+choos variant from above :
+Enter hostname or IP address: master.academybytes.com
+will this host be an openshift master [Y/N]: Y
+will this host be RPM or container based (rpm/container)? [rpm]:
+
+Do you want to add additional host [Y/N]:y
+Enter hostname or IP address: node1.academybytes.com
+will this host be an openshift master [Y/N]: N
+will this host be RPM or container based (rpm/container)? [rpm]:
+
+Do you want to add additional host [Y/N]:N
+
+optional
+
+Enter hostname or IP address [None]:
+Enter hostname or IP address [master.academybytes.com]:
+
+custom domain name for dns mask
+
+New default subdoamin (Enter for none) []: ocp.master.acdemybytes.com
+Specify your http proxy ? (Enter for none []:
+Specify your http proxy ? (Enter for none []:
+
+Do the above facts look correct? [Y/N]: Y
+Are you ready to continue? [Y/N]: Y
+
+remainig ANSIBLE will do install everything
+
+systemctl status |grep openshift
+
+node1
+
+systemctl status |grep openshift
+------------------------------------------------
+oc whoami
+
+oc get pods
+oc get nodes
+
+atomic-openshift-excluder exclude
+
+User Management
+==================
+
+cluster wise roles 
+
+admin ---- modify roles
+basic-user --- basic activities
+cluster-admin --- can do anything
+cluster-status --- know cluster status
+edit ----- can modify objects cant roles
+self-provisioner --- able to create new project
+view --- cant any modification able to view existing 
+
+oc adm policy who-can  ------ oc adm policy who-can show pods ----- users:system:admin groups :system:cluster admins system:masters
+oc adm policy add-role-to-user---oc adm  add-role-to-user admin dev --- grand privillage to dev user 
+oc adm policy remove-role-to-user
+oc adm policy remove-user
+
+master 
+
+oc whoami
+system:admin
+
+oc describe clusterPolicy default
+show lot of policy
+
+oc describe clusterPolicyBindings :default
+
+oc get projects
+
+oc describe PolicyBindings :default -n openshift (projectname) we can understand particular project policies
+
+oc new-project linuxacademy
+
+oc describe PolicyBindings :default -n linuxacademy
+
+oc adm policy add-role-to-user admin student -n linuxacademy
+
+oc describe PolicyBindings :default -n linuxacademy
+
+admin role add to student user 
+
+
+oc adm policy add-cluster-role-to-user cluster-admin student (student user will get full cluster admin access)
+oc describe clusterPolicyBindings :default |grep cluster-admin -A4
+
+remove 
+-------
+oc adm policy remove-user student -n linuxacademy
+oc adm policy remove-cluster-role-from-user cluster-admin student
+
+configure authentication
+-------------------------
+master
+
+yum -y install httpd-tools
+
+htpasswd -b /etc/origin/openshift-passwd student openshift
+
+systemctl restart atomic-openshift-master.service
+
+sudo vim /etc/hosts
+192.168.10.162 master master.academybytes.com
+
+user and roles
+---------------
+oc whoami
+admin
+
+htpasswd -b /etc/origin/openshift-passwd law openshift (username password)
+
+for in in shen jack chi
+do 
+htpasswd -b /etc/origin/openshift-passwd $i openshift
+done
+
+systemctl restart atomic-openshift-master.service
+
+oc login https;//master.academybytes.com:8443 -u law
+username: law
+password :
+
+oc whoami
+law
+oc logout
+
+oc label user law org=PorkChopExpress
+
+for i in chi jack shen
+do
+oc label user $i org=PorkChopExpress
+done
+
+oc describe user law 
+will get information about law 
+
+oc new-project dev --description="PorkChop Express engineering team"
+oc decribe project dev
+get information about dev
+
+for i in engineering content pod 
+do
+oc new-project $i --decription="PorkChop Express engineering team"
+done
+
+create new 3 projects 
+
+oc projects
+
+oc adm or oadm
+oadm policy add-role-to-user admin shen -n engineering
+oadm policy add-role-to-user admin shen -n dev
+oadm policy add-role-to-user admin shen -n pod
+
+oadm policy add-role-to-user basic-user chi -n dev
+
+oadm policy add-role-to-user admin law  -n content
+oadm policy add-role-to-user cluster-status law -n engineering
+oadm policy add-role-to-user cluster-status law -n prod
+oadm policy add-role-to-user view law -n dev
+
+for i in enginnerin dev prod content
+do
+oadm policy add-role-to-user view jack -n $i
+done 
+
+all project view role only
+
+oc describe policyBinding :default -n engineerring
+
+differnt users and their role will get 
+
+
+Creating a Pod service 
+-----------------------
+oc whami
+system:admin
+
+oc projects
+get projects list 
+
+switch the one project to another project
+
+oc project test ( project name )
+
+oc get pods 
+get running pods
+
+oc new-project myproject
+
+centos/ruby-22-centos7-https://githup.com/openshift/ruby-ex.git (example appilcation on openshift)
+
+oc new-app centos/ruby-22-centos7-https://githup.com/openshift/ruby-ex.git
+
+oc create -f mariadb-persistent-ex280.yml
+
+oc get pods
+get details of running pods
+
+oc decribe pod ruby-ex-1-8pm8h
+
+curl 10.129.0.39:8080
+
+oc expose svc ruby-ex
+route ruby-ex exposed
+
+oc get routes
+will get "ruby hostname "
+
+curl "ruby hostname "
+
+Application scaling
+_______________________
+oc get dc --- we will get image details 
+
+oc scale --replicas=5 dc/ruby-ex
+oc autoscale dc/ruby-ex --min=1 --max=5 ---cpu-percentage=80
+
+if need to be delete pod
+oc delete pod (podname)
+
+if need to be delete porject
+oc delete project myproject
+
+Docker image to openshift
+--------------------------
+Docker pull httpd 
+oc new-app docker.io/httpd
+
+
+TLS
+----
+oc new-app centos/ruby-22-centos7-https://githup.com/openshift/ruby-ex.git
+oc get builds
+
+oc get svc ( which services running on project particularly pods )
+
+one service need to be access external neeed to be route 
+
+oc expose get routes
+if edit route 
+oc edit route (ruby-ex) service name 
+
+host:
+ tls:
+  termination: edge
+port:
+  targetport: 8080-tcp
+
+ 
+
+
+database 
+--------
+
+$ minishift start
+$ eval $(minishift oc-env)
+$ oc new-app -e MYSQL_ROOT_PASSWORD=admin https://raw.githubusercontent.com/openshift/origin/master/examples/db-templates/mariadb-persistent-template.json
+$ oc rollout status -w dc/mariadb
+$ oc expose dc mariadb --type=LoadBalancer --name=mariadb-ingress
+$ oc export svc mariadb-ingress
+ ....
+ports:
+    - nodePort: 30907
+
+custom port for service in openshift use (nodeport) 
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  labels:
+    name: mysql
+spec:
+  type: NodePort
+  ports:
+    - port: 3036
+      nodePort: 30036
+      name: http
+  selector:
+    name: mysql
+
+
+Storage
+-------
+accessmode :
+ReadWriteOnce RWO
+Readonlymany RWX
+Readwritemany RWX
+
+storage supported volume types.
+------------------------------
+NFS,HostPath,GlusterFs,Ceph RBD, Openstack cinder,
+AWS EBS, GCE persistent Disk,iSCSI, Fiber channel,
+Azure Disk,Azure file 
+
+policy
+--------
+avialable  ------------------ a free resource that is not yet bound to a claim
+bound   --------------------- the volume is bound to calim
+released -------------------- the claim has been deleted but the resource  is not yet recliamed by the cluster
+failed ---------------------- the volume has failed its automatic reclaimation
+
+
+NFS
+
+apiVersion:v1
+kind:PersistantVolume
+metadata:
+  name:pv0002
+spec:
+  capacity:
+    storage:5Gi
+  accessmode:
+    - ReadWriteOnce
+  persistantVolumeReclaimPolicy:Recycle
+  nfs:
+    path:/ tmp
+    server: master.academybytes.com
+    kind: PersistentVolumeClaim
+    apiVersion: V1
+    metadata:
+      name:claim-mysql
+    spec:
+     accessmodes:
+       - ReadWriteOnce
+      resources:
+        requests:
+           storage: 3Gi
+
+creating persistin volume.
+maria db
+master:
+
+apiVersion:v1
+kind:PersistantVolume
+metadata:
+  name:persistant01
+spec:
+  capacity:
+    storage:1Gi
+  accessmode:
+    - ReadWriteOnce
+  nfs:
+    path:/home/data
+    server: master.academybytes.com
+  persistantVolumeReclaimPolicy:Recycle
+
+NFS 
+mkdir -p /home/data/persistant01
+chown -R nfsnobody:nfsnobody /home/data/persistant01
+chmod 700 /home/data/persistant01
+vim /etc/exports.d/dbvol.exports
+/home/data/persistant01 * (rw,async,all_squash)
+
+rpm -qa| grep nfs
+systemctl enable nfs
+systemctl start nfs
+exfortfs -a 
+showmount -e 
+/home/data/persistant01 *
+
+node1:
+
+mount -t nfs 192.168.10.250:/home/data/persistent01 /mnt
+
+master :
+oc create -f mariadb-persistent-ex280.yml
+oc get pv
+
+we get persistent volume details 
+
+oc describe pv persistent01
+
+
+
+
+
+
+
+S2I ( source to image )
+
+sources
+S2I scripts
+Bulder image
+
+s2i -- webhooks
+
+oc new-project s2i
+oc new-app centos/httpd-24-centos7-http://10.129.0.187/academybytes/httpd-ex.git
+adm policy add-role-to-user admin student
+
+webconsole
+
+oc describe bc/httpd-ex  find out pod webhook
+
+copy url wehook to > githup > 
+
+edit after > copy repo url
+
+master node 
+git clone :copied repo url
+
+cd httpd-ex
+vim index.html > edit
+
+git add .
+
+git commit -m "added cloud assements"
+git remote add openshit "gitlab url(repo)"
+git push openshift master
+username :
+password :
+
+source to image on openshift
+
+Resourc quotas
+===============
+
+cpu, 
+memory, 
+request.cpu
+request.memory
+request.storage
+limits.cpu
+
+object counts managed by quota
+pods --- secrets
+replicationcontrollers ---- configmaps
+resourcequotas ------ persistentvolumeclaims
+service ----- openshift/imagestreams
+
+apiVersion:v1
+kind:Resourcequota
+metadata:
+  name:compute
+spec:
+  hard:
+   pods:"4"
+   request.cpu:"1"
+   request.memory:"2Gi"
+   limits.cpu:"2"
+   limits.memeory:"4Gi"
+
+oreobjectcounts.yaml
+apiVersion:v1
+kind:Resourcequota
+metadata:
+  name:coreobjectcounts
+spec:
+  hard:
+    persistentvolumeclaims: "4"
+    services:"5"
+    replicationcontrollers: "5"
+
+oc create -f oreobjectcounts.yaml
+oc get resourcequotas
+
+oc describe resourcequotas oreobjectcounts
+
+is.yaml
+apiVersion:v1
+kind:Resourcequota
+metadata:
+  name:planetexpress-is
+spec:
+  hard:
+    openshift.io/imagesreams: "4"
+
+oc create -f is.yaml
+oc describe resourcequotas planetexpress-is
+
+
+vim limitrange.yaml
+apiVersion:v1
+kind:"Limtrange"
+metadata:
+  name:"planetexpress-lr"
+spec:
+  limits:
+    -
+      type: "pod"
+      max: 
+        cpu:"1"
+        memory:"512"
+      min:
+       cpu:"200m"
+       memory:"5Mi"
+     -
+      type: "contianer"
+      max: 
+        cpu:"1"
+        memory:"512"
+      min:
+        cpu:"100m"
+        memory:"5Mi"
+      default:
+         cpu:"250"
+         memeory:"256Mi"
+      defaultrequest:
+         cpu:"256Mi"
+         memeory:"256Mi"
+      maxlimitRequestRatio:
+         cpu:"2"
+
+oc create -f limitrange.yaml
+oc get limits
+
+OPENSHIFT METRICS
+-------------------
+
+kubelet --- each node has a kubelet
+
+
+kubelet ---------> heapster ---------->hawkular
+                                          |
+                                        cassandra database
+                    cpu ---------------->
+                    memory
+                    network base
+
+
+
+hawkular metrics
+
+metric data storage engine
+appache cassandra backend
+singular UI Access                     ------------- hawkular metrics
+GenericMonitoringSystem
+REST/HTTP interface 
+
+
+
+Heapster
+heapster.enables --------------------------------- container cluster monitoring
+performance analysis ----------------------------- for kubelets
+collect and interpret various signals ------------ the computersource usage
+pluggable storage -------------------------------- heapster supports many pluggable storage backends or sinks
+mutiple data siurce ------------------------------ retriving list thrn contacting nodes
+
+configuration::nfs host group
+
+/.config/openshift
+openshift_metrics_install_machine=true
+openshift_metrics_storage_kind=nfs
+openshift_metrics_storage_access_mode=["ReadWriteOnce"]
+openshift_metrics_storage_nfs_directory=/exports
+openshift_metrics_storage_nfs_options='(rw,root_squash)
+openshift_metrics_storage_volume_name=metrics
+openshift_metrics_storage_volume_size=10Gi
+
+
+casssndra-data.yaml
+apiVersion:v1
+kind:PersistentVolume
+metadata:
+  name:cassandra-data
+spec:
+  capacity:
+    storage: 10Gi
+  accessmodes:
+    - ReadWriteOnce
+  nfs:
+   path: /var/data/ocp-metrics
+   server: 192.168.10.250
+ PersistentVolumeReclaimPolicy: Recycle
+
+oc create -f casssndra-data.yaml
+oc get pv
+
+vim .config/openshift/hosts -------------- add below line in file 
+
+openshift_metrics_install_machine=true
+openshift_metrics_hawkular_hostname=hawkular-openshift-infra.ocp.master.academybytes.com
+openshift_metrics_cassandra_storage_type=pv
+openshift_metrics_cassandra_storage_volume_name=cassandra-data
+openshift_metrics_cassandra_storage_volume_size=10Gi
+openshift_metrics_cassandra_storage_host=192.168.10.250
+
+
+ansible-playbook -i .config/openshift/hosts /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
+ansible-playbook -i .config/openshift/hosts /usr/share/ansible/openshift-ansible/playbooks/byo/openshift-cluster/openshift-metrics.yml -e openshift_metrics_install_metrics\
+=True -e openshift_metrics_hawkular_hostname=metrics-openshift-infra.ocp.master.academybytes.com -e openshift_metrics_cassandra_storage_type=pv
+
+oc project openshift-infra
+oadm policy add-cluster-role-to-user cluster-admin student
+oc get pv
+
+Tips and Tricks
+
+oc volume -h
+oadm diagnostics -h
+oadm diagnostics 
+oc get events --all-namespaces=true
+
+openshift deployments
+
+https://docs.openshift.com/container-platform/3.3/dev_guide/deployments/basic_deployment_operations.html
+
+Starting a Deployment
+oc deploy --latest dc/<name>
+
+Viewing a Deployment
+oc rollout history dc/<name>
+
+specific history -- version
+oc rollout history dc/<name> --revision=1
+
+more detailed information about a deployment configuration and its latest revision
+oc describe dc <name>
+
+Canceling a Deployment
+oc deploy --cancel dc/<name>
+
+
+oc deploy --retry dc/<name>   ------- if failed re try 
+oc rollout undo dc/<name>   --------- rollinf back
+
+deployment startatagies
+https://docs.openshift.com/container-platform/3.3/dev_guide/deployments/deployment_strategies.html
+
+automate deployment
+oc tag deployment-example:v2 deployment-example:latest
+
+
+rolling deployment
+oc new-app openshift/deployment-example
+
+expose 
+oc expose svc/deployment-example
+
+replicas
+oc scale dc/deployment-example --replicas=3
+
+descripe
+oc describe dc deployment-example
+
+udemy
+------
+oc --help
+
+oc config get-context
+oc get pods
+oc get pods -o wide ( brief about container start that kind)
+oc get rc --- replication controller 
+oc get service --- which one exposed to url outside access
+oc descripe service (frontend) particular service
+
+we cant directly acesss container. But we can through the service 
+
+oc --help
+oc api-resorces ( like deployemnet other api)
+
+oc get deployementconfigs or dc
+oc describe dc/frontend
+
+oc get builds
+oc get routes
+oc describe routes
+
+oc delete (container name)
+
+rollout 
+------
+oc rollout history dc/fronednd
+oc rollout status dc/frontend
+
+openshift --- project
+kubernetes ---- namespaces
+
+
+oc config get-context
+shows all of the environment incude projects also
+oc login
+username:
+password:
+oc project (projectname) newproject --- switch to project
+oc get pods ---- running pods information inside projects 
+
+volume attach to pod and mount to container
+
+oc get pods --show-lables
+
+oc decribe rc fronend
+
+replicationcontroller --- openshift
+replicaset -------------- kubernetes
+
+oc edit rc/repliccontrol if we need edit replicationcontroller 
+
+get the ROUTE name 
+
+oc --config=/root/openshift.local.clusterup/kube-apiserver/admin.kubeconfig get pods -all -namespces
+
+above command executed got lot of information like namespace NAME ready status like. NAME is a route 
+
+
+oc --config=/root/openshift.local.clusterup/kube-apiserver/admin.kubeconfig get pods -all -NAME ------- get particular router configuration
+
+
+newporoject
+
+oc new-project instavote --display-name="instavote app" --description="sample voting application"
+
+oc get endpoints
+
+if we want image stream data 
+oc get is/vote( image name )
+
+oc new-app --searach --template=php
+oc new-app --help (lot more help)
+
+docker image deploy to Openshift
+oc new-app --deocker-image=inicron/oc-vote:v1 --name=vote
+
+
+route adding a existing service
+
+oc describe route/vote
+oc delete route/vote 
+oc expose svc(service) vote --port=8080
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+           
+
+
+
+
+     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

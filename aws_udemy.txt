@@ -1,0 +1,560 @@
+aws
+-----
+IAM ( Identity ans access management )----- global service --- root acount not to be shared others
+     create new user
+            adduser--awsconsole management access--password--creategruop--groupname--some metadatas(tagname) 
+     IAM policies
+            Iam--userrs--  (add permmission(policy alredy exists) or -- inline policy) --iamreadonlyaccess--
+     MFA
+            Account setting -- change password policy --
+            right top corner account name -- my security credential -- MFA -- virtual MFA device -- virtual MFA application listed 
+            (google authenticator,Twillio Authy)-- choose app via scan QR code 
+
+
+
+
+
+     aws CLI 
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+
+            aws configure
+            acess key id : xxxxxxxxxx
+            secret access key : xxxxxxxxxxxxxx
+            region: us-west-1
+
+      IAM roles for AWS services
+            some of aws servies need to perform action on behalf , to do we will assign permission to aws services with IAM roles
+
+            creating roles
+                create role --> aws services --> (lot of services is there) ec2 --> ReadOnlyAccess named(demoec2roles)
+                once role created it's on roles section it can be attach ec2 instance
+      
+      IAM security tools
+                IAM credential report( Account level)
+                    reports all of your account user and their various credentials
+
+                IAM Access advisor ( user level)
+                     Access advisor shoes the permmission granted to a user and when the services were last accessed
+
+
+2 ec2
+      Budjet
+                 budjet--> create budjet --> monthly (as our wish) 
+                 once budjet thresh hold has been overcome recipients get alerts from AWS
+
+       Bootstapping
+                while ec2 instance starting execting script called bootstraping
+                EC2 booting time  execution scripts in aws ec2
+                                  
+
+      Elastic ip -- associate elastic ip --- attach instance or network interface( if restart instance restarted ip can,t change )
+                remove --- deassociate elastic ip -- release elastic ip
+
+      spot instance 
+                suitable for patch, test kind of job
+                cancel the spot instance then terminate the spot instance associate groups 
+       spot fleet 
+              spot fleet allows us to come up with spot instance with lowest price
+       
+       placement groups
+               like a raid ( instance has been created with many hard disks-rackspaces and differnt availabitlity zones)
+    
+               network & security
+                         create placements group , once create attach palcement group while crate a instance(3 configure instance details) choose palcement group
+       
+               Elastic network interfaces:
+                        logical component in a vpc lika virtual network created
+                        primary private IPv4 one or maore secondary IPv4
+                        one Elastic Ip (ipv4) per private IPv4one public IPv4
+                        one more security groups
+                        A MAC some_email_address
+                 network -- create network inerface -- custom name---subnet---ip option ( auuto assign or custom)---seurity groups
+                 choose the ENI --- attach the instance
+                 if you want detach ENI 
+                  network interface---action---detach ___enable force detach from instance
+                  autoamtical created eni while instance creation --> automaticaly delete if instance has been deleted
+
+       EC2 Hibernate
+                   if restarted the instacne OS not stopped going to hibernate , help for fast reatart
+                   RAM state is written to a file in the root EBS volume
+                   we can find out to use (((uptime ))) command
+
+                   instance lanch 3 stage congiure inastance we can set hibernate instance
+
+3 EBS (Elastic Block store)
+       EBS  volume is a network drive you can attach your instance while they run
+       It can be mounted to one instance at a time.
+       they are bound to specific region 
+       attach and detach one instance to another instance is   
+         
+         mkfs xfs /dev/svda1 (if disk have a data dont do that)
+         mount /dev/xvda1 /data
+
+         snapshot
+                got to the volume -- needed particular volume can be snapshot
+                once snapshot complete it will be show and EBS--snapshot
+                It can be copy across the region
+                got the sanpshor --- creat the volume and choose availability zone , we can convert snapshot to volume
+         ami (amazon machine image)
+                 use for custamization the ec2 instance
+                 add software,configuration,monitoring,all kind is pre packaged
+                 build for specific region can be copied across region
+                   Public ami: amazon provided
+                   own ami: privately configured image
+                   aws marketplace: some third party vendors sells 
+
+
+             running instance -- image and template -- create image (demoAMI)
+             launch instance -- myami -- choose (demoAMI)
+
+        EC2 instance store 
+               ebs volume use network drive limited performance so we can use InsStore will get better EBS
+              It,s avoid if root volume deleted instacne get error (if use instance store we avoid that ]) 
+                better performance hardware we can choose 
+                its high level performance
+
+        EBS volume types
+                6 types volumes
+                gp2 /gp3 SSD--- genral purpose SSD  (can be used us boot volumes)
+                io1 / io2  SSD Highest performance SSD (raid)
+                st1 HDD -- lowcost HDD
+                sc1 HDD --- lowest cost HDD
+                EBS volume are characterized in size throughput IOPS (I/O per sec)
+
+                General Purposes SSD
+                Provisional IOPS
+                Hard DIsk Drives
+
+
+               Hard disk drive HDD
+               cant be a boot volume
+                    cold Hdd -- infrequent access data's support
+                    
+
+       EBS multi attach:
+              same Availability Zone  instanceS only can attach EBS (io /io2 family)
+              But the EBS should be cluster aware file system is must (not xfs, ext4.like that )
+                   
+       EBS encryption
+       ebs volume
+            snapshot --- got to snapshot -- create volume -- copy the snapshot process enable encription then we will get the  encryption volume
+       raid 
+             incresed performmance mirrior volume
+             raid 0 and 1 we can
+                   5, 6, 10 not recommended
+             we have send data two instane in same time with 2x Network
+            raid 0 ---   instance (either)
+                           |
+              copy Instance    copy Instance
+                  A               B
+                  c               D 
+           raid 1 ---   instance (mirror)
+                           |
+              copy Instance    copy Instance
+                  A               A
+                  B               B
+
+           EFS (Elastic file System)
+                   managed nfs can be mount many ec2 instance
+                   efs work with ec2 instance with multiy AZ
+                   Highly available, scalable, expensive pay per use
+                   mountin 100s of instance across AZ
+
+                   ec2 --- security groups --- EFS ( security group can control with efs) only support linux
+
+                   NFSv4.1 protocol
+                   create file system -- lifecycle(30 days access) general base IO (performance mode(choose based IO))
+                    optional enable encryption
+                       network access
+                        choose vpc -- AZ-- subnet ID --SG (ec2-demo (no rules))  
+
+                   ec2 instance -- sudo yum install -y amazon-efs-utils
+                   into instance mkdir efs
+                    sudo -t efs -o  tls fs-5dafeeac: /efs
+      
+                    ec2-demo SG 
+                        instance attach with ec2-to-fs (SG)
+                              c2-to-fs  inbound rule -- nfs 2049 (choose ec2-dem0) (alredy attach with EFS)
+
+
+4 High availability and scalability ELB & ASG
+       vertical scalbilty:
+            incresed instance size like cpu and memory,harware like data volume
+       Horizontal scalability:
+       load balancer:
+                    load balancer is forward internet traffic to ec2 instance.
+              Health Checks:
+                    They enable the load balancer to know if instances ot forwards traffic to are avialable to reply requests.
+                    if the resonse is not 200(ok) .if not unhealthy
+              types of load balancer
+                    classic load balancer(http(layer4),https(layer7),tcp) --- v1 old generation 2009
+                    Application load balancer (http,https, Websocket) (V2 -new generaion - 2016)
+                    Network load balancer (TCP,TLS (secure tcp)& UDP)(V2 -new generaion - 2017)
+                    Gateway loadbalancer
+                load balancer:
+                     4xx error are client side induced errors
+                     5xx errors are application induced errors
+                     load balancer errors 503 means at capacity or no registered target
+                  load balancing monitoring:
+                       Elb access logs will log all access requests(so you can debug per request)
+                       cloudwatch metrics will give you aggregate statistics (ex: connection count)
+       
+       Gateway load balancer:
+              gateway load balancer attach with vpc stuff
+       
+       load balancer:
+                define loadbalancer(load balancer name) if want private load balancer(check)
+                choose protocal 
+                loadbalancer http 80 instance 80
+                  assign security groups:
+                      laodbalSG (http 80 from anyware)
+                  configuring security settings:
+                             if we can choose SSL 
+                  configure health check
+                          protocal: http
+                          port: 80
+                          ping path: /index.html
+                     Advanced details:
+                        response time: 5 seconds
+                        interval     : 30 seconds
+                        unhealth thrashold : 2
+                        Health thrshhold: 10
+              Add instance
+              Add tags
+              review
+                     go to instance --- status -- inservice(ok) out of service( ins not able to get outside traffic)
+                     instanceSG -- inbound rules (http 80 (custom - loadbalancerSG))
+        Application load balancer:
+                x forwarded protocol
+          create load balancer--application load balancer--configure load balancer--listener 80- choose availability zones
+          confgure security settings: wehave configure here secure listner for https (ssl)
+          configure security groups:  choose loadbalanceSG(80)-- 
+          configure routing: target group
+                       target group: new target group
+                       name: my-first-target-group
+                       target name: instance
+                       protocol: http
+                       port: 80
+                       protocol version: http1 or http2
+                   Health checks:
+                         protocol: http
+                         path: /
+                     Advanced health check settings
+                         port: traffic port
+                         healthy threshold: 3
+                         unhealthy threshold: 2
+                         timeout: 4
+                         interval: 30
+                         successcodes: 200  
+           registerd groups:
+                   targets: 
+                           selcect the instance call terget
+                     apllication load balancer want to be instance to select here with port(80) or wish
+               if want aditional target groups
+                  loadbalancing -- target groups- create target group--second target group
+            ALB-- listner 
+                    alredy listner froward traffic to first target group
+                    add new then set path (/WebCsr) choose second target group save it   
+              ALB hit with webadmin go to first target group
+                           webcsr go to the second target group 
+                             listner can forward to target group or output display like a ERROR CODE
+
+       Network load balancer:
+               layer 4 , used to handle TCP and UDP protcols
+                  loadbalancer--tcp,UDP,network load balance-choose VPC--ipsetting(privateip or assigned by aws)avialbiltyzone--listner
+                      tcp 80 choose (Target groups)    
+       load balance stickenes:
+                 when client access always the particular instance use cookies
+                 claassic load balnce it the load baance stuff
+                 application load balancer it a target group stuff
+                   attributes - edit
+                      stickeness enable set minits 120 seconds
+       cross zone availability load balance
+                    attributes - edit
+                      configure cross zone load balance - enable or disable
+        load balancer drainning:
+                      calassic load balancer : drainning
+                     application load balancer: deregistration delay
+              if instance restart or teminate. once the instance will be up that during time request send to the ramaining instance.
+       SSL certificates:
+           CLB:
+               support only one ssl certificate
+           ALB:
+               multiple listner with multi ssl certificate
+               Uses server name indication SNI to make it works 
+           NLB:
+              multiple listner with multi ssl certificate
+               Uses server name indication SNI to make it works
+
+           listner: https 443 certificates(choose and upload certificate ) 
+       
+       Auto Scaling group:
+                    In stance having upnormal loads or incase of failure we can create and aunch instance in automaticaly predefine confgiured 
+                    way it called a auto scaling group.
+              ASGs attributes:
+                      A launch configuration 
+                                  create a demoASG  and launch congiuration
+                          AMI + instance type
+                                   choose ami and instance types then key pairs
+                                   choose vpc ,subent like AZones, security Groups,volume then advance detail user data like bootable script
+                                   load balncing is optional,if ALB -- chose target group
+                                 Health checks based on EC2 and load balancer  
+                               configure group size and scaling policies
+                                          desired:1
+                                          minimum:1
+                                          maximum:1
+                                 add tags,review auto scaling group cration done          
+
+                          EC2 user data
+                          EBS volumes
+                          security groups
+                          ssh key pairs
+                          min size, max size, initial capacity
+                          network + subnet information
+                          load bakancer information
+                          scaling policies
+                      Auto scaling alaram:
+                                        possible to scale ASG to cloud watch alaram
+                      Auto scaling rule:
+                             auto scaling rule that are directly managed by EC2
+                             target avarage cpu
+                             number of request on the ELB per instance
+                             avarage network on 
+                             avarage network out 
+                  Auto scaling groups:
+                          choose ASG (demoASG)
+                            create scaling policy (target  tracking scaling)(step scaling)(simple scaling)
+                            metric type - average CPU utilization, value 50
+
+                            step scaling 
+                            crate awscloud watch alaram--autoscaling groups-demoASG-cpuutiliziztion
+                            avrage : 5 minits
+                            condition:
+                                     threshols type: static 
+                                     cpu utiliziation: Greater
+                        notification: sns(simple notification service) 
+                               create topic -- include mail recipiants
+                 
+                 APL, CLB -- run with dns url. NLB  only can run with elastic ip 
+                 Make sure you remember the Default Termination Policy for ASG. It tries to balance across AZ first, 
+                 and then delete based on the age of the launch configuration.           
+
+5 RDS (amazon relational database service)
+       RDS 
+          Backup sare automatically enabled, Not able to (SSH,manual patch,OS patch) in to DB instance
+          abilty to restore to any point in time (from old abackup to 5 minit)
+          7 days tetenation (can be increaed to 35 days)
+            DB snapshot:
+                 manulay trigger by the user  
+              RDS replicas (scalability)
+                     we can replicas AZ, cross AZ, cross region
+                     master database can read and write , replica can be read only
+                      network fee 
+                          different az with same region dont need to pay
+                          differnr az with differnt region need to pay( Disaster recovery)
+                          One DNS name - automatic app failover to standby
+                       RDS - from single AZ to multi AZ
+                            zero downtime operation ( no need to stop the DB)
+                            just click on modify the data base 
+              amazon RDS:
+                       create database-- standard create--choose databas(auora(not for free tier),mysql,mariadb,postgress,misql,oracle)
+                       Templates(production,dev/test/freetier)--databasename(database1)--masterusername(admin)--password
+                       choose dbinstance (db.t2.micro)
+                       storgae--General purpose SSD--20GB-if enable storage autoscaling maxzimize dbsize like 1000GB
+                       Avialbility&durability -- if choose multiAZ(better for production servers)
+                       connectivity--- dfault or choose VPC
+                       public accessible--- yes or No
+                       VPC security groups: choose existing or create new one
+                       availabiltt zone: nopreferrence(can connect AZ A,AZ B,AZ C)database poer:3306
+                          Additional configuration:
+                              database name : while started initiate DB --- mydb
+                              if want IAM db authentication:enable
+                              if want backeup: enable
+                              backup retention : 7days to 35 days
+                                backup window we can shedule time to backup like cron jobs
+                                  log: log expoert to cloudwatch logs: want to be enable below 
+                                      errorlog,Genral log, slow query log,auditlog
+                             maintenance: auto minor version upgrade enable. selcet shedule like cron jobs
+                             deletion protection: if enable we dont delet DB
+                                              goto particular instance: instacne action we can create replica, snapshot like that. 
+                                           database creation has been done 
+                                           ********************************
+                  
+                   Database  client: sqlectron
+                                 mysql endpoint under connect in RDS databse(database1) port
+
+                            RDS security encryption:
+                                  master and replicas with AWS KMS- AES-256 encryption 
+                                  encryption has defined at launch time 
+                                  if mastert not encrypted , read replicas cannot be encrypted
+                                  transparent Data encryption TDE avilable for Oracle SQL server
+                                       SSL option with trust certificate whne connecting to database
+                                          PostgreSQL rds.force_ssl=1 in the AWS RDS conslole (parameter group)
+                                          GRANT USAGE ON **TO 'mysqluser'@%'REQUIRE SSL:
+                                            network:
+                                                db instance can be place in subnet only
+
+                    AMAZON Aurora:
+                                 Aurora is a properitry software from AWS (grows 10GB to 64TB)
+                                 Aurora can have 15 replicas, 20% more cost other RDS
+                    Elastic cache:
+                           Amazon ElastiCache is a fully managed in-memory data store and cache service by Amazon Web Services (AWS).
+                           The service improves the performance of web applications by retrieving information from managed in-memory caches, 
+                           instead of relying entirely on slower disk-based databases. 
+                              
+                              ElastiCache supports two open-source in-memory caching engines
+                              The same way RDS is to get managed Relational databases
+                              Elastic cahche is to get managed Redis or Memcached
+                              caches are in memeory databases with really high performance, low latency
+                              help reduced load off of databases for read intensive workloads
+                              help application stateless
+                              
+                              REDIS                                                    MEMCACHED
+                              multi AZ with auto failover                              multi-node for partioning of data(sharding)
+                              Read replicass to scale reads and high avialability      no high availability
+                              Data durablity using AOF persistsnce                     non persistsnce
+                              Backup and restore feature                               no backup and restore 
+                     Elastic cache:
+                             create elastic cache:
+                                custer engine: redis,memcahed choose any one 
+                                name: myfirstredis
+                                description:my first redis instsnce
+                                engine version:5.0.6
+                                port: 6379
+                                palacement group:default group
+                                nodetype: cache.t2.micro(0.5GB)
+                                number of instance:2
+                                   Advanced Redis settings:
+                                      multi AZ with Auto-failover available
+                                              interact with application need to redis driver
+
+                             Do not suuprt IAM,
+                             IAM policy on elasticcahe are only used for AWS API-level security 
+                            store session only can enable elastic cache     
+                                 we csn set password/token when create a redis cluster 
+                                 support SSL in flight encryption
+                                Memcached SASL based authentication
+                      elastic cache ARCH
+                       app  <------> elastic cache
+                             catch miss 
+                         ---------------->
+                              read from DB
+                         <------------------------------->DB
+                         --------->
+                           write to cache
+
+Route53
+         Route53 is a managed DNS(Domain name system)
+         client machine send to DNS request to ROUTE53 then route53 send to the DNS optained ip data to client 
+         then client can communicate with app server
+         DNS is a collection of rules and records which helps clients understand how to reach a server through its domain name.
+         aws most common records are 
+            A ------ hostname to IPv4
+            AAAA --- hostname to OPv6
+            CNAME -- hostname to hostname 
+            Alias -- hostname to AWS resource
+                       rout53 consle 
+                              hosted zone is alredy hosted things shows
+                              if not use to register domain option
+                                A-- crate a record set --type A -- kannan@saikanal.com -- IPv4(10.20.30.40)
+                                nslookup-dig
+                                once load balancer is created we are getting LB DNS name
+                               TTL time ti live is important is every DNS records  
+                        CNAME:
+                          host name to other hostname 
+                            app.mydomain.com to kanal.kannan.saikana.com
+                        ALias:
+                            points a hostname to AWS resource(LB dns name)(app.mydomain.com -->blabla.amazonaws.com)
+                            free of charge
+                            Native health check
+                     Routing policy:
+                       simple:
+                            it like a A record simple pint to IPv4
+                       Weighted:
+                             control the % of the requests that go tp specific endpoint.
+                               70% ---- 1
+                               20%------2
+                               10%------3
+                                created record set --dns name(app.saikanal.com)--A--TTL-value(ip)--routing pilicy--weighted-70%
+                                created record set --dns name(app.saikanal.com)--A--TTL-value(ip)--routing pilicy--weighted-20%
+                                created record set --dns name(app.saikanal.com)--A--TTL-value(ip)--routing pilicy--weighted-10%
+                       latency:
+                            Redirect to the server that has the least latency close to us
+                            super helpful when latency of users is priority
+                            latency is evaluted in terms of user to designated AWS region
+                          created record set --dns name(app.saikanal.com)--A--TTL-value(ip)--routing policy--letency-instanceRegion(us-east-1)
+                          created record set --dns name(app.saikanal.com)--A--TTL-value(ip)--routing policy--letency-instanceRegion(eu-west-1)
+                         connect paricular county VPN then access stie which one is clos to region that website(instance)
+                              healthchecks
+                                   x healthy check   --> 3 default
+                                   x unhealthy check --> 3 default
+                                   defualt health check interval --- 30s (10s higher cost)
+                                   1 request in every 2 second on average
+                                   http, https, tcp can health check, health check can integrate check with cloudwatch
+                                   health check can be link with DNS queries
+                                         crate health check ip address of webserver instsance port(http)
+                       failover:
+                           if one instance getting failed record will be serve in secondary instance
+                            created record set --dns name(app.saikanal.com)--A--TTL-value(ip)--routing policy--failover-healthchck(IRE-healthcheck(choosed))
+                             
+                       Geo location:
+                             differnt from latency based, this based on user laoction, traffic from the UK should go specific Ip
+                           created record set --dns name(app.saikanal.com)--A--TTL-value(ip)--routing policy--geolocation-location(FRANCE)
+                           it based on geo locaton not aws region
+                       
+                       Multi Value:
+                       created record set --dns name(app.saikanal.com)--A--TTL-value(ip)--routing policy--multivalue-healthchck(IRE-healthcheck(choosed))
+                       created record set --dns name(app.saikanal.com)--A--TTL-value(ip)--routing policy--multivalue-healthchck(Germany-healthcheck(choosed))
+                 third party DNS
+                      dns name should be registerd in hosted zone, then we will get 3 or 4 NS records
+
+ ECS  
+         Docker:
+            Docker is a software devlopement platform to deploy apps 
+            Apps are ackaged in containers that can be run on any OS
+            apps are run any machine, no compatibility issues, predictable behaviour, less work,easier to maintain deploy, any language,OS
+              public docker hub: https://hub.docker.com
+              private docker registry: ECR (elastic container registry)
+              public: ECR public
+
+
+
+
+
+
+
+
+                                     
+
+
+
+             
+
+
+
+
+
+
+
+
+
+
+                                        
+
+
+
+
+
+
+                 
+
+                     
+                               
+                              
+
+
+            
+
+       

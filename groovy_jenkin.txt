@@ -1,0 +1,122 @@
+def x = 5
+x += 5
+println x 
+assert x == 10 (program working fine)
+assert x == 11 (getting error )
+
+data types
+------------
+strings
+integers,
+float,
+boolean
+
+control structure
+-------------------
+if (is programmer){
+    println "he is a programmer"
+}
+else{
+    println "not a programmer"
+}
+
+comments /*
+*/
+
+subroutines = function
+
+import java.lang ( whatever packages needed just import)
+
+cd java_home directory
+cd jobs (ifromation about all jobs build number logfiles)
+Jenkinsfile --- J is capital is important
+
+parameter mention place
+branch 
+default master
+beow githup branch selection
+${branch}
+
+pipeline reference
+https://jenkins.io/doc/pipeline/steps
+
+example pipelinecode
+node{
+    stage('SCM'){
+       echo 'collective code from varsion control'
+       git branch: '${branch}',url: 'https://githup.com/FeynmanFan/JenkinsGroovy.git
+ }
+    stage('build'){
+        echo 'Building...'
+        sh 'dotnet --version'
+        sh 'dotnet build ConsileApp1'
+        echo 'Building new feature'
+   }catch(ex){
+       echo 'something went wrong'
+   }
+   finally{
+       // cleanup
+   }
+    stage{('Test')
+         echo 'Testing'
+}
+     stage('Deploy'){
+         echo 'deploy..'
+     }
+}
+
+
+
+import jenkins.model.jenkins
+println (Jenkins.instance.pluginManager.plugins)
+
+www.javadoc.jenkins-ci.org/jenkins/model/jenkins.html
+
+import jenkins.model.jenkins
+def svr = Jenkins.instance;
+def job = svr.getjob("test");
+sched.got();
+
+while goovy script section -- advance
+binding variable 
+target=test
+
+while goovy script section -- checkbox option is there it is used to be administrator privillage
+
+use the string parameter to use the jenkin job
+string parameter  --- target
+
+def target = build.buildVariableResolver.resolve("target")
+
+groovy welcome msg in genkin
+import jenkins.model.*;
+import java.util.logging.Logger
+
+logger logger = logger.getlogger("")
+logger.info "Executing init script"
+
+Jenkins.instance.setDisableRememberMe(true)
+Jenkins.instance.setSysytemMessage('<h1> WELCOME </h1>')
+Jenkins.instance.save()
+
+logger.info "Init script complete"
+
+mv jenkins home directory 
+mkdir init.groovy.d
+copy above script file in here 
+wel_config.groovy
+
+Handling exception
+try{
+    do stuff
+}catch (ex){
+    do stuff when breaks
+}finally{
+    always do the stuff
+}
+
+continious delivery
+==============================
+todabackend.com
+todo web service for python
+django-admin startproject todobackend

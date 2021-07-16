@@ -1,0 +1,104 @@
+cat provider.tf
+---------------------------
+teraform init
+teraform validate
+plan
+apply
+
+state.tf
+
+
+
+
+
+provider "aws" {
+  access_key = "${var.aws-access-key}"
+  secret_key = "${var.aws-secret-key}"
+  region = "us-west-2"
+}
+
+
+cat varible.tf
+------------------------------
+
+
+variable "aws-access-key" {
+  default = "AKIAI7KBPNN55CDQ"
+  description = "my account accesskey"
+  }
+
+variable "aws-secret-key" {
+  default = "23FbwLMBroUMwDgK+VMLGvs4nFZ1f3tj4pOAdJ"
+  }
+
+variable "image" {
+  default = "ami-0d6621c01e8c2de2c"
+  }
+
+variable "spec" {
+  default = "t2.nano"
+  }
+
+variable "number" {
+  default = "1"
+  }
+
+
+<mail2dhilipkumar@yahoo.com>, <manik.tk145@gmail.com>, <prassanna.v@gmail.com>, <ssspandiarajan@zoho.com>
+
+######Create sg and add ports########
+
+resource "aws_security_group" "sg" {
+    name = "virtual1SG"
+    description = "for web access"
+
+    ingress {
+      from_port = "22"
+      to_port =  "22"
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      }
+
+    ingress {
+      from_port = "-1"
+      to_port = "-1"
+      protocol = "icmp"
+      cidr_blocks = ["0.0.0.0/0"]
+     }
+}
+
+
+###Create Key-pair#############
+
+resource "aws_key_pair" "virtual-key" {
+    key_name = "virtual-key"
+    public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDQXWP9SlQme2rm3Wut+ean3icojDuP/kjil5Z9/dZxLGD8unT9z3b7nOl1ATl2eSlAr2eDkyTje3FHIX2I3mIxtJItFHzJ5I5Xxo1KajKCaff/GgfEqAZ8rtaA3fP/wl34ivPZORPw3ZirFt1WAdzLtKTdMmHZIoazEGcw2vXqotVGYukfhRgovoq8d0mx6+CA6PTEP0iuLehmAzhTNzJ1NMLLEoTFdkDtAjBmuJ0BifMY314P5ADAqDirjEVSrTVWlLG3agIVfzLUJesKKD5IVy7Aw1Go5gLjaom/l+wGCPMU671u39AugLOlwmJgNDDdjyQJdBM31rL56MTDD9yN root@terraform"
+}
+
+####Creation instance #######
+
+resource "aws_instance" "web" {
+     ami = "${var.image}"
+     instance_type = "${var.spec}"
+     count = "${var.number}"
+     key_name = "virtual-key"
+     vpc_security_group_ids = [aws_security_group.sg.id]
+     subnet_id = "subnet-fd3204b6"
+     availability_zone = "us-west-2a"
+
+     tags = {
+         Name = "Prod-Web01"
+     }
+
+
+}
+
+
+
+
+terr
+
+
+
+
+

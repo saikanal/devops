@@ -1,0 +1,46 @@
+kubernetes
+
+scheduling
+healing
+rolling back update 
+
+
+kubernetes architecture
+use can access with api,cli, dashboard
+
+master server is entry point of all administrative tasks
+master 
+---------
+controller
+api server
+sheduler
+key value store
+---------------------------
+
+node
+----
+kube proxy -----> kubelt -----> pods
+
+
+etcd --- to manage the state master to master and worker  nodes
+api ----- used to REST command entry point to cluster 
+key value store --- resulting the state of cluster store the distributed key value store 
+controler --- control manager to worker traffice 
+               life cycle function create namespace, event garbage collection,node garbage collection
+               detremine the states in cluster 
+
+sheduler -------  regulate the slave on nodes , store the usage information of each slave nodes
+                   shedule the work from pod and services
+
+kublet ----- Its a agent communicate with master and execute the nodes or worker nodes
+         ---- get the information from api-server the ensure containers are Up and running.
+
+pod --- It a one or group of container shared storage/network specification of run the container 
+        same content and IP shared one pod to another via localhost
+
+kube-proxy --- Its run on each  node deal with  individual host subnetting and ensure that services are availabe on external parties
+                act as a load balance for single worker node
+
+
+
+

@@ -1,0 +1,117 @@
+
+Kubernetes Package Administration with Helm
+Packaging Applications with Helm for Kubernetes
+
+helm source code repos
+https://githup.com/phcollignon/helm3
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+helm charts
+
+helm version
+helm repo add
+helm search repo
+helm install
+helm list
+
+
+helm upgrade
+helm rollback
+helm history
+helm create 
+helm package
+
+helm hup ------------ we have 1300 charts 
+
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/    ---------------------   ading the table repository
+helm repo search stable/mysql
+helm install mysql stable/mysql
+
+
+helm show chart stable/mysql ----- if we wanna see the charts YAML code
+
+helm install stable/mysql --dry-run --debug
+
+helm list ----- shows the  installed charts(mysql ---- default) on kubernetes cluster 
+
+kubectl get all ----- get all pods information about charts 
+helm status mysql  --- shows the mysql cahrts status
+ 
+helm get mainfeast mysql > /path/to/output 
+helm get mainfeast values> /path/to/output 
+helm get mainfeast notes > /path/to/output 
+helm get mainfeast all > /path/to/output 
+
+
+helm install mysql stable/mysql --version 1.6.3
+helm repo search stable/mysql --versions --------------- showing all versions in MYSQL
+helm upgrade mysql stable/mysql --version 1.6.4
+
+
+helm history mysql
+helm rollback mysql 
+
+helm create ourchart (chartname) .\ourchart  ( path)
+
+helm create ourchart (chartname) .\ourchart  ( path) --destinaton C:\charts ---------> packaging charts
+
+helm upgrade ourchart (chartname) .\ourchart  --set containerimage=nginix.1.1.18 -------> particular things needs to be upgrade 
+
+helm local repo
+**************
+
+https://chartmuseum.com/     ------------- opensource helm charts repository
+
+helm install chartmuseum stabe/chartmuseum --set env.open.DISABLE_API=false
+
+$POD_NAME=$(kubectl get pods -l "app=chartmuseum' -o jsonpath="{.items[0].metadata.name}")
+kubctl port-forward $POD_NAME 8080:8080 --namespace default
+
+helm repo add chartmuseum http://127.0.0.1:8080
+
+curl --data-binary "@ourchart-0.1.0.tgz' http://localhost:8080/api/charts
+
+helm repo update 
+
+helm search repo chartmuseum/ourchart
+
+Helm remote repository
+**********************
+http server based 
+chart museum,cloud storage,nexus,Jfrog container,git hup
+
+using git
+create pulic repo in git hup
+just clone to locak machine
+go to charts run ---> helm repo index.
+
+helm repo add dbafromthecold(pulic git hup repo)
+https://rwa.githupusercontent.com/danfromthecold/DemoHelmRepo/master
+
+if use in browser
+
+https://rwa.githupusercontent.com/danfromthecold/DemoHelmRepo/master/index.yaml
+
+helm search repo dbafromthecold/ourchart
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,31 @@
+- name: Get files in a folder
+  find:
+    paths: "/var/www/html/wwwroot/somefolder/"
+  register: found_files
+
+- name: Get latest file
+  set_fact:
+    latest_file: "{{ found_files.files | sort(attribute='mtime',reverse=true) | first }}"
+
+    #         - name: Get latest file
+#           set_fact:
+#             latest_file: "{{ found_files.files | sort(attribute='mtime') | last }}"
+#         - set_fact: latest_file="{{ found_files.stdout_lines[0] }}"
+
+
+  Tasks:
+  - name: checking if the file 1 exists
+     stat:      
+      path: /path/to/foo abc.xts
+     register: stat_result
+
+  - name: moving file 1
+    command: mv /path/to/foo abc.xts /tmp
+    when: stat_result.stat.exists == True
+
+ - name: Recursively find /tmp files older than 2 days
+  find:
+    paths: /tmp
+    age: 2d
+    
+

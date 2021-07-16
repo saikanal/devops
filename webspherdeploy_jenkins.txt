@@ -1,0 +1,34 @@
+#set +x
+USERNAME=${user_pw%:*}
+PASSWORD=${user_pw#*:}
+wget --no-check-certificate --user=$USERNAME --password=$PASSWORD $URL  ###Download code
+code=`echo $URL|awk -F '/' '{print $NF}'` ## Filename
+
+ansible $Server -m copy -a "src=$WORKSPACE/$code dest=/utilities/deployment" -i /data/ansible/all_hosts --become --become-method su --become-user wasadmin
+ansible $Server -m shell -a "/utilities/autoload.sh $JVM_Name $code" -i /data/ansible/all_hosts --become --become-method su --become-user wasadmin
+
+
+ansible-playbook /data/ansible/playbooks/nft_Theta_logmodechange.yml -i /data/ansible/nft_${ENV}_hosts --limit Theta_App_Server -e "loglevel=$log_level"
+
+ansible-playbook /data/ansible/playbooks/dnsfetching.yml -i /data/ansible/dnss_hosts$Server
+
+
+ansible $Server -m script -a "/data/ansible/playbooks/dnsfetching.yml " -i /data/ansible/all_hosts
+ansible-playbook playbooks/PLAYBOOK_NAME.yml --limit "host1"
+
+ansible-playbook /data/ansible/playbooks/dnsfetching.yml -i /data/ansible/dnss_hosts --limit "$Server"
+
+
+
+
+
+
+#set +x
+USERNAME=${user_pw%:*}
+PASSWORD=${user_pw#*:}
+wget --no-check-certificate --user=$USERNAME --password=$PASSWORD $URL  ###Download code
+code=`echo $URL|awk -F '/' '{print $NF}'` ## Filename
+
+ansible $Server -m copy -a "src=$WORKSPACE/$code dest=/utilities/deployment" -i /data/ansible/all_hosts --become --become-method su --become-user wasadmin
+ansible $Server -m shell -a "/utilities/autoload.sh $JVM_Name $code" -i /data/ansible/all_hosts --become --become-method su --become-user wasadmin
+

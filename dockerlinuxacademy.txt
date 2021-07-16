@@ -1,0 +1,653 @@
+Cloud Servers (at the top of the page) is 'user' with a password of '123456'. If you are using a Hands On Lab!, 
+then you will connect as 'linuxacademy' and '123456'.
+
+docker install
+________________
+centos 7
+----------
+yum install -y yum-utils device-mapper-persistent-data lvm2  ( updated version of docker dont need for lvm2,devicemapper)
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo          (option) --enable docker-ce or docker-ce-test
+yum update
+yum install docker-ce
+
+systemctl enable docker && systemctl start docker && systemctl status docker 
+
+if other than root user can run docker , that user need to be add in docker group
+
+cd /var/run
+(give the permission to docker.sock file)
+
+usermod -aG docker userxxxx
+
+ubuntu
+-------
+apt-get install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg |sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release - cs) stable"
+apt-get update
+apt-get install docker-ce
+
+systemctl enable docker && systemctl start docker && systemctl status docker 
+
+if other than root user can run docker , that user need to be add in docker group
+
+cd /var/run
+(give the permission to docker.sock file)
+
+usermod -aG docker userxxxx
+
+
+Name spaces
+_______________
+processid , 
+mount , 
+IPC , 
+user ( currently experimental support for ) ,
+Network ,
+
+control groups
+________________
+cpu
+memory
+network bandwidth
+disk
+priority
+
+Docker pull
+_____________
+docker pull- a hello-world
+docker pull --disable-content-trust hello-world
+docker images
+docker run hello-world
+docker images --all
+docker images --disgests
+
+before one imge download state imge result 
+docker images --filter "before=centos"
+
+docker images --no-trunc ----- expended view to image list
+docker images centos:6
+docker images -q ---- get image id
+
+docker search
+______________
+docker search appache
+docker search appache |wc -l
+docker search --filter stars=50 apache
+50+ above stars images only show
+
+docker search --filter stars=50 --filter is-official=true apache 
+
+Tag image
+_________
+docker tag centos:6 mycentos:v1
+docker images
+
+
+original centos image mycentos:v1 both have same image id 
+
+docker rmi centos:6 ------ It's not delete base centos 6 informatio but delte 
+docker rmi mycentos:v1
+delete all images information
+
+tag and push to privte docker repository
+________________________________________
+ docker images 
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+httpd1              latest              f6dc4e60a3af        2 hours ago         140MB
+httpcent            latest              e77c77f17b46        3 weeks ago         140MB
+httpd               latest              e77c77f17b46        3 weeks ago         140MB
+mskanna/centos      firsttry            75835a67d134        8 months ago        200MB
+
+[user@amurugan1c ~]$ docker tag httpd1 mskanna/centos:httpd1
+[user@amurugan1c ~]$ docker images 
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+mskanna/centos      httpd1              f6dc4e60a3af        2 hours ago         140MB
+httpd1              latest              f6dc4e60a3af        2 hours ago         140MB
+httpcent            latest              e77c77f17b46        3 weeks ago         140MB
+httpd               latest              e77c77f17b46        3 weeks ago         140MB
+mskanna/centos      firsttry            75835a67d134        8 months ago        200MB
+[user@amurugan1c ~]$ docker push mskanna/centos:httpd1
+The push refers to repository [docker.io/mskanna/centos]
+bbeb6ebcaab6: Pushed 
+6c4a74a82dc9: Mounted from library/httpd 
+9cba8b480e83: Mounted from library/httpd 
+25797e1a8e3f: Mounted from library/httpd 
+d2583584487e: Mounted from library/httpd 
+cf5b3c6798f7: Mounted from library/httpd 
+httpd1: digest: sha256:67184101ff75c1ac761e675293e62ae32f105dcc7e762d26ad7705db21f459ab size: 1574
+
+running container to create a new image
+_____________________________________
+docker cp index.html testweb:/usr/local/apache2/htdocs
+docker container commit testweb reistry:repo:version    (same like tag) running container version control
+docker image build -t registry:repo:version /path/to/Dockerfile
+
+fine the latest one then tag 
+docker tag (latestcontainer id) httpd1
+
+docker tag f6dc4e60a3af httpd1
+
+after run that container
+
+docker container run -it -d --name testweb1 -p 8082:80 httpd1
+
+
+docker container run -itd --name testweb1 --net host ( without port use host machine port)  ubuntu bash
+
+docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
+
+__________________________________________________________________________________________________
+
+
+
+
+
+
+
+docker image ls        ---> docker image list
+docker ps              ---> running containers list
+
+docker container run -d --name testweb httpd
+docker container inspect testweb |  grep ipaddress
+
+
+DOCKER storage-driver
+
+
+vi  /etc/docker/dameon.jason
+
+{ 
+        "storage-driver"|"devicemapper"
+		
+		}
+		
+systemctl stop docker	
+systemctl start docker
+restart bfore backe lited images otherwise restsrt after existing image gone. 
+
+docker info |grep storage 
+
+*********************************************************************
+DOcker logging driver  ---- supporting logging driver 
+
+vi /etc/rsyslog
+
+uncomment below two lines
+
+provide UDP syslog reception
+$ModLoad imudp
+$UDPServerRun 514
+
+
+vi  /etc/docker/docker.jason
+
+
+
+{               
+         "log-diver" : "syslog"
+		 "log-opts: {
+		     "syslog-address":"udp://172.31.125.216:514"
+			 }
+			 
+			 }
+			 
+			 systemctl start docker 
+			 
+docker container run -d --name testweb httpd 
+
+
+************************************************************************************
+docker swarm init --adverise-addr (ipaddress) 172.31.16.218
+
+created on master join token
+
+docker swarm join-token worker
+(got output then paste to worker spaecified node)
+
+created worker joijn token
+
+docker swarm join-token manager
+(got output then paste to manager spaecified node)
+
+**********************************************************************************************
+backup swarm
+_______________
+
+cd /var/lib/docker/
+cp swarm >>> directory in other location like /tmp
+tar -cvf swarm.tar swarm
+copy to other server 
+scp swarm.tar user@tcox6:/home/user/
+goto that server
+      cd /var/lib/docker/
+      rm -rf swarm or move to other location
+systemctl stop docker 
+cd /home/user/
+tar -xvf swarm.tar
+cp swarm /var/lip/docker 
+systemctl start docker 
+  
+docker swarm init --force-new-cluster
+*****************************************************************************************************************************************
+backup complete UCP and DTR
+_____________________________
+docker container run --log-driver none --rm -i --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp backup backup.tar
+
+docker container run --log-driver none --rm -i --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp restore --id m79hiedniHJklOTY < backup.tar
+mv backup.tar ucp-backup-04jul19.tar
+
+docker run -i --rm docker/dtp backup --ucp-insecure-tls --ucp-url https://tcox4.mylabserver.com:443 --ucp-username admin --ucp-password xxxxx > dtr.backup.tar
+
+docker run -i --rm docker/dtp restore --ucp-insecure-tls --ucp-url https://tcox4.mylabserver.com:443 --ucp-username admin --ucp-password xxxxx < dtr.backup.tar
+
+
+minimum requirements
+8GB ram (manger or DTR)
+4GB ram (worker)
+3GB free disk
+recommanded requirements
+16GB ram (manager or DTR)
+4vCPUS (worker or DTR)
+
+timeout 
+between manager nodes within 3 seconds 3000 milisecond
+manager to across worker like nodes 5 seconds 5000
+etcd 1/2 second  500 miliseconds
+
+Docker EE
+docker engine with support  -------------- docker engine 17.06 +
+Docker Trusted registry ------------------ DTR2.3 +
+universal control plane------------------- UCP2.2 +
+
+Universal control plane
+------------------------
+
+docker container run --rm -it --name ucp -v /var/run/docker.sock:/var/run/docker/sock docker/ucp:2.2.4 install --host-address 172.31.44.80 --interactive
+
+goto ucp > Docker Trusted Registry > copy to clibboard
+
+another server build like DTR
+
+goto that server 
+
+
+docker run -it --rm docker/dtr install --ucp-node tcox5.mylabserver.com --ucp-username admin --ucp-url https://tcox4.mylabserver.com --ucp-insecure-tls
+
+docker logs (container name )
+
+
+****************************************************************************************************
+222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222
+*****************************************************************************************************
+docker pull - use to be pulling docker image 
+docker images - list out docker images in our system
+docker images --diagest brief information on docker 
+docker images --filter "before=centos:6" its used to be list out excet "centos" in images list 
+docker images --no-trunc show full docker images id 
+docker images centos -- show centos only
+docker image -q docker image id only show 
+
+
+docker search appache (docker search --limit 10 appache) 
+
+docker image tag centos:6 mycentos:v1
+docker rmi centos:6
+
+docker image list out the uses 
+docker image history (image name) shows the history information about image
+docker image save myrepo/mycentos:ver2 > mycentos.custom.tar  --save image to tar file 
+docker tvf mycentos.custom.tar |more
+docker import mycentos.custom.tar (custamized name ) localimport:centos6
+
+
+
+if u need orginal name with import 
+docker load --input mycentos.custom.tar
+
+docker image prune -- delete all images ( if images associate with container also)
+
+
+
+docker image inspect centos6 >centos6.out
+
+docker image tag centos:6 anothercentos:6
+docker image inspect  centos:6 --format '{{.ReportTags}}'
+
+docker ps -a 
+docker rm 'docker ps -a -q'
+docker run -it --rm --env MYVAR=whatever --name testcontainer centos:6 /bin/bash
+echo $MYVAR
+
+docker run -d httpd 
+docker -exec -it httpd /bin/bash
+
+docker build -t customdocker:v1 . -->/Dockerfile location 
+ 
+docker images history (centos) image name >history of th image 
+
+contianer 
+
+docker export (containername "webserver) > exportcontainer.tar
+docker import exportcontainer.tar exportcontainer1:copy
+
+Secure docker registry
+***************************************************************************************************************************************
+mkdir certs
+mkdir auth
+openssl req -newkey rsa:4096 -nodes -sha256 -keyout certs/dockerrepo.key -x509 -days 365 -out certs/dockerrepo.crt -subj /CN=myregistry.com
+
+ls -l certs
+dockerrepo.crt
+dockerrepo.key
+
+vi /et/hosts
+machineIP myregistrydomain.com
+
+mkdir -p /etc/docker/certs.d/myregistry.com:5000
+
+goto above directory ^
+cp /home/user/certs/dockerrepo.crt ca.crt --> that file only hav a root access
+
+docker pull registry:2
+docker run --entrypoint htpasswd registry:2 -Bbin test password >auth/htpasswd 
+
+cat htpasswd 
+
+**********************************************************************************************************************************************************
+*************************************orchestration**************************************************************************
+
+docker service create --name constraints -p 80:80 --constraints'node.labels.mynode ==testnode' --replicas 3 httpd
+
+docker service ps webservice
+
+docker service update --replicas 3 testweb
+
+---docker service update --replicas 10 --detach=false testweb ---replicas got but not running
+
+docker service update --limt-cpu=.5 --reserve-cpu=.75 --limit-memory=128m --reserve-memory=256m testweb
+
+
+docker service scale --detach=false testngnix=4 testweb=2
+
+--------------------global mode 1 to 1 ratio     replicatd mode vs global mode is very important ( default rplicated mode )
+
+docker service update --replicas 3 tetweb(contianer name)
+
+
+template
+_________
+
+docker service create --name myweb  --hostname="{{.Node.ID}}.{{.service.Name}}" --detach=false httpd
+(get container id)
+ 
+docker inspect --format ="{{.config.Hostname}}" myweb.1.05xxxxxxxxxxxxxxx > output.jason
+we get information about specific jason
+
+apply node label
+----------------
+
+docker node ls
+(diplay docker running node(hostname will be showed))
+docker node inspect  (particular node id xxxxxxxxxx)
+
+docker node update --label-add mynode=testnode ( node id xxxxxxxxxx) update information we are get use below command
+docker node inspect --pretty (docker id xxxxxxxx) | more 
+Labels:
+  -mynode=testnode
+
+docker service create --name constraints -p 80:80 --constraints'node.labels.mynode ==testnode' --replicas 3 httpd
+
+set the static IP in contianer 
+--------------------------------
+docker network create --subnet=172.18.0.0/16 mynet123
+docker run --net mynet123 --ip 172.18.0.22 -it ubuntu bash
+
+
+
+
+
+
+
+*********************************************************************************************************************************************************************
+
+Docker storage 
+
+_____________________________
+
+docker volume ls
+docker volume create my-mount --- volumename 
+
+docker volume ls 
+
+(output like below)
+DRIVER   VOLUME NAME
+local      my-mont
+
+docker volume inspect my-mount | more 
+
+(output volume breif details )
+
+cd /var/lib/docker/volumes/my-mount/
+cd _data
+echo "hello this is mount testing" hostfile.txt
+
+
+docker service create --name testweb -p 80:80 --mount source=my-mount,target=/internal-mount --detach=false --replicas 3 httpd
+
+docker exec -it (docker service run id ) /bin/bas/
+cd internal-mount
+
+( this case mounted volume data only shared file its own node only mount to container not other system running containe or cloud running cluster node )
+
+docker service remove testweb
+docker volume rm my-mount
+
+docker system prune -a ------------- delete unused image in local system 
+
+docker container inspect --format="{{.state.Paused}}" testweb
+output----------------------falsed
+
+docker node ls
+docker ps 
+docker
+
+<<<<<<<<<make sure you re-initialize the new manager you restored to with the -force-new-cluster so that its not attempting to contact previous nodes>>>>>>>>
+
+SELinux issues ---- setenforce 0 to put SELinux into passive mode 
+permissions /cpu memory issues /routing/firewall
+
+
+
+
+**********************************************************************************************************************************************************************
+docker network
+________________
+
+docker network ls 
+
+docker network inspect bridge |  more
+
+docker pull httpd 
+
+docker run -d --name testweb -p 80:80 httpd
+
+docker ps ----------------> showing output running container
+
+docker container inspect testweb |grep IPAdd
+172.17.0.2
+
+elinks http://hostname 
+
+
+docker container inspect --format="{{.NetworkSettings.Networks.bridge.IPAddress}}" testweb
+172.17.0.2
+
+network creation
+__________________
+docker network create --driver=bridge --subnet=192.168.1.0/24 --opt "com.docker.network.driver.mtu"="1501" devel0
+
+docker network ls 
+
+showing created new network
+
+docker network inspect devel0 | more 
+                   
+                          subnet 192.168.1.0/24
+
+already container running with ip(172.17.0.2)
+
+docker network connect --ip=192.168.1.10 devel0 testweb ----------- container connect to new network
+
+docker container inspect --format="{{.NetworkSettings.Networks.bridge.IPAddress}}" testweb
+172.17.0.2
+docker container inspect --format="{{.NetworkSettings.Networks.devel0.IPAddress}}" testweb
+192.168.1.10
+
+
+now docker container running with two network so we remove one network on container 
+
+docker network disconnect bridge testweb
+
+docker DNS
+___________
+
+cat /etc/resolve.conf  ---base system
+
+nameserver 172.31.0.2
+
+if we run container it take this name server IP
+
+if  we run container with external DNS 
+
+docker run -d --name testweb --dns=8.8.8.8 --dns=8.8.4.4 httpd
+
+permentaly change the container DNS without change the base system
+
+cd /etc/docker/dameon.jason
+vi dameon.jason
+{
+  "dns":{"8.8.8.8", "8.8.4.4"}
+}
+systemctl restart docker
+
+
+run the new container its have a new configure dns ----dameon.jason
+
+ports
+______
+
+docker run -d --name testweb -P httpd
+
+its run port like ----> 32772 >80/
+
+
+we can assign port no also in particular container 
+
+docker run -d --name testweb --publish 80:80 httpd
+docker run -d --name testweb2 --publish 5901:80 httpd
+
+Deploy service in overlay network
+_________________________________
+
+docker network create --driver=overlay --subnet 192.168.1.0/24 overlay1
+
+docker network  ls
+
+overlay1 network showed
+
+docker network inspect overlay1
+subnet 192.168.1.0/24
+gateway 192.168.1.1
+
+New container in new network
+
+Docker service create --name testweb -p 80:80 --network=overlay1 --replicas 3 httpd
+
+we get 3 replicas 3 host servers
+
+docker service ps
+
+docker ps 
+cocker container inspect (particular container id) |grep IPAddress
+
+login overlay1 network one of the container . Within container able to ping along all of the service (replicas continer service) .
+
+Docker network drivers.
+_______________________
+
+Bridge,None,host,overlay,ingress,Docker gateway bridge,
+
+cat /var/log/messages --------- normal log
+
+docker container logs
+docker service logs testweb
+
+
+**********************************************************************************************************************************************************************
+
+docker security
+_______________
+
+export DOCKER_CONTENT_TRUST=1
+
+identity roles,
+---------------
+adminstrators
+regular usaer
+
+none ------ no access to swarm nodes
+view only ---- the user can view resources ( services, volumes, netorks ) but cant create/delete/modify them
+Restricted control -- grant the ability to view and edit volumes,networks,and image But cant run services or containers on the running node. 
+                      restricts the ability to mounta node directoryor 'exec' into running contianers.
+
+scheduler --------- allowed to view nodes and schdeule worloads . need additional resource permissions (like container view) to perform other tasks
+full controll ------- the user is allowed to view and edit networks images and volumes as well as create contianes and services without restriction. they cant see other users containers or 
+                      services 
+
+
+ucb bundle 
+--- download that bundle in local system > mkdir then unzip that bundle > inside directory run below command 
+eval $(<env.sh)
+env |grep DOCKER
+we got certificate install path
+
+docker images 
+we got output also DTR server .
+
+grants > roles > subjects 
+
+                    
+
+
+MTLS( mutual authentication  TLS((transport layer security )) ) self signed authentication
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

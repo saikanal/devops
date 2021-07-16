@@ -1,0 +1,160 @@
+cat main.yml
+---
+      - hosts: web
+        become: true
+        gather_facts: no
+        tasks:
+          - include: undeploy.yml
+          - include: deploy.yml
+
+cat undeploy.yml
+
+---
+        - name: Backup WebCSR application
+          become: true
+          become_user: ui2
+          command: sh /tmp/deploy/copyversion.sh
+          tags: ['copyapp']
+
+        - name: find the old version
+          shell: "cat /tmp/deploy/t2.txt"
+          register: old_app
+          tags: ['oldv']
+
+        - name: Passing Existing version to JYTHON
+          lineinfile:
+            path: /tmp/deploy/undeploy.sh
+            regexp: 'AdminApp.uninstall'
+            line: AdminApp.uninstall('{{ old_app.stdout }}')
+          tags: ['oldj']
+
+        - name: Undeploy Existing WebCSR app
+          ignore_errors: true
+          command: sh /tmp/deploy/undeploy.sh
+          tags: ['undeploy']
+
+        - debug:
+            msg: The {{ old_app.stdout }}  has been undeployed.
+
+
+cat deploy.yml
+---
+          - name: copy WebCsr  to deploy
+            copy:
+               src="{{ item }}"
+               dest=/tmp/repo/
+               mode=0755
+            with_fileglob:
+               - /tmp/repo/*
+            tags: ['repocopy']
+
+          - name: find the new version
+            command: sh /tmp/deploy/newversion.sh
+            tags: ['newv']
+
+          - name: register new version
+            shell: "cat /tmp/deploy/newversion.txt"
+            register: new_app
+          - debug:
+               var: new_app.stdout
+            tags: ['regnewv']
+
+          - name: new version pass to JYTHON
+            lineinfile:
+                path: '/tmp/jython/deploy.sh'
+                regexp: 'AdminApp.install'
+                line: AdminApp.install('/tmp/repo/{{ new_app.stdout }}.ear', ['-appname {{ new_app.stdout }}  -installed.ear.destination /opt/IBM/WebSphere/AppServer/profiles/UI2/installedApps/lsbtpfisblr01Node04Cell -contextroot WebCSR -MapWebModToVH', [['.*', '.*', 'default_host']]])
+            tags: ['newj']
+
+          - name: Deploy WebCSR to UI2
+            command: sh /tmp/jython/deploy.sh
+            tags: ['deploy']
+
+          - name: Application update with existing configuration
+            become_user: ui2
+            command: sh /tmp/deploy/updateversion.sh
+            tags: ['update']
+
+          - name: UI2 Stop
+            become: true
+            become_user: ui2
+            shell: ./stopServer.sh server1
+            ignore_errors: true
+            args:
+               chdir: /opt/IBM/WebSphere/AppServer/profiles/UI2/bin
+            tags: ['UI2stp']
+
+          - name: UI2 start
+            become: true
+            become_user: ui2
+            shell: ./startServer.sh server1
+            ignore_errors: true
+            args:
+               chdir: /opt/IBM/WebSphere/AppServer/profiles/UI2/bin
+            tags: ['UI2strt']
+
+          - debug:
+               msg: The {{ new_app.stdout }} has been  sucessfully deployed on UI2
+
+
+cat copyversion.sh
+#!/bin/bash
+
+cp -p /opt/IBM/WebSphere/AppServer/profiles/UI2/installedApps/lsbtpfisblr01Node04Cell/WebCSR*/WebCSR-*/WEB-INF/configuration.properties /tmp/deploy/config/
+cp -p /opt/IBM/WebSphere/AppServer/profiles/UI2/config/cells/lsbtpfisblr01Node04Cell/applications/WebCSR*/WebCSR* /tmp/deploy/oldrepo/
+
+source='/tmp/deploy/oldrepo/'
+
+ls  $source/ > /tmp/deploy/t1.txt
+cat /tmp/deploy/t1.txt | rev |cut -c 5- | rev > /tmp/deploy/t2.txt
+sed -i 's/.*/("&")/' /tmp/deploy/t2.txt
+
+-------------------------------------------------------------------------------------
+
+cat newversion.sh
+
+#!/bin/bash
+
+
+
+source='/opt/deploy/newrepo/'
+
+
+ls  $source/ > /opt/deploy/t3.txt
+cat /opt/deploy/t1.txt | rev |cut -c 5- | rev > /opt/deploy/t4.txt
+--------------------------------------------------------------------------
+
+mv /tmp/deploy/oldrepo/* /tmp/deploy/old/
+********************************************************
+cat updateversion.sh
+#!/bin/bash
+
+cp /tmp/deploy/config/configuration.properties /opt/IBM/WebSphere/AppServer/profiles/UI2/installedApps/lsbtpfisblr01Node04Cell/WebCSR*/WebCSR*/WEB-INF/
+
+----------------------------------------------------------------------------------------------------------------
+cat undeploy.sh
+/opt/IBM/WebSphere/AppServer/profiles/UI2/bin/wsadmin.sh  -lang jython << EOF
+import os
+AdminApp.export(oldapp)
+AdminApplication.uninstallApplication("WebCSR-7_4_2_164376_war")
+AdminConfig.save()
+
+EOF
+
+----------------------------------------------------------------------------------------------------------------------
+cat deploy.sh
+/opt/IBM/WebSphere/AppServer/profiles/UI2/bin/wsadmin.sh  -lang jython << EOF
+import os
+AdminApp.install('/tmp/repo/WebCSR-7_4_2_164376_war.ear', ['-appname WebCSR-7_4_2_164376_war -installed.ear.destination /opt/IBM/WebSphere/AppServer/profiles/UI2/installedApps/lsbtpfisblr01Node04Cell -contextroot WebCSR -MapWebModToVH', [['.*', '.*', 'default_host']]])
+
+AdminConfig.save()
+
+EOF
+------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+

@@ -1,0 +1,329 @@
+ssh -i ire.pem ec2-user@52.78.68.10
+
+efs -- creation -- create security group all ports open ---
+sudo mount -t efs fs-14caerfef:/ /efs
+nfs need instance
+go to instance id security grop inpound rule
+nfs ---------- efs security groups
+if all availabilt zone selected ,attached all instance now ur efs is like central storage 
+
+database
+
+mysql -h mysql–instance1.123456789012.us-east-1.rds.amazonaws.com -P 3306 -u mymasteruser -p
+
+IAM
+
+iam -- users ,groups , policies, roles, credentials 
+
+arn:partition:service:account
+partition: aws or aws cn ( china )
+service: s3, ec2,
+region: regioncode : us-west1,
+
+iam policies  --- identity policy --- based on jason
+
+manage policy --- aws managed policy ----
+
+custom managed policy -- service ( S3 )---- jason tap --- reviw policy(if no error)
+once create used many
+
+
+user --- inline policy
+
+5000 IAM user per account 
+
+groups 
+
+one user can multiple groups 
+
+Access keys --- based on groups 
+active --- make active --- delete 
+one user can only two access keys only
+
+IAM --- access keys
+---------------------
+
+can modify active ---- inactive ---- delete 
+
+IAM___acesskey__CLI
+---------------------
+iam user ----- security credentials --- crete access key-- 
+copy access key xxxxxxxxxx 
+aws command line interface --- choose flavour (linux,windows)
+
+linux --- epel release,instal pip
+>pip install awscli
+>aws s3 ls 
+
+
+
+cmd line shell
+>aws 
+>aws help
+>aws configure 
+aws secret access key : xxxxxxxxxx 
+default region name :us-east-1
+outputformat :jason
+
+>aws s3 ls 
+
+
+IAM roles
+----------
+5000 iam user in one single aws account 
+
+
+code deploy
+------------
+blue green deployment
+----- online ,load balancer, existing deployment
+In place deployment
+------- offline deployment
+configure instance -- name of application---revision--deployment group( instancess)---service role--choose existing name of appli or new
+choose deployement configuration,
+one at a time 
+half at a time 
+all at a time 
+--review ---- deploy ----- rollback also avialble if any instance deploy fail roll back previous version.
+
+our deploy history also saved if need them we can deploy
+
+settingup code deploy
+----------------------:
+IAM --- aws_servicerole---aws_code_deploy--awscodedeployrole
+code in S3
+create bucket 
+xapi-code-deploy-demo
+Ec2 to access s3 create policy
+create policy----create custom---(name) code-deploy-ec2-policy--plicydocumet>>>pastepolicy
+
+create new role for above policy need to be attach
+code-deploy-ec2-profile------aws_servicerole---Amazon-EC2--policytype-custommanaged policy----code-deploy-ec2-policy
+
+ec2 instance create 
+
+while instance creation >> attach role >>>code-deploy-ec2-profile
+
+code deployconfiguration
+
+codedeploydefault:OneAt a Time ----- one by one deploy
+codedeploydefault:AllAt a Once ----- production environment everything
+codedeploydefault:half at a time ---- if we have 4 instance 2 succesfull the do remain
+
+service role ARN :awscodedeployrole(aws code deploy service role)
+
+ 
+
+aws code deploy
+--sample deploy--application deplyment---deployment group
+dployment type
+inplce 
+blue/green
+add instance 
+deploy configuration
+rollback--- option
+select role type(code deployment)
+
+code deploy revision
+---------------------
+got to repo directory
+aws deploy push --application-name DemoApplication --s3-location s3://xapi-code-deploy-demo/DemoApplication --source .
+aws deploy create-deployment --application-name Demoapplication --s3-location bucket=xapi-code-deploy-demo,key=DemoApplication,bundleType=Zip,etag=XXXXXX --deployment-group-name DemoFleet
+{
+"deploymentID": "d-J0IF68QML"
+}
+
+code deployments---deployments
+
+code deployments stages
+------------------------
+instance creation --- iam role -- choose (code deploy ec2 profile)
+deployment configuration ------- codedeploy default at once 
+code deploy --- demo fleet 
+service role --- code deploy service role 
+
+Appsec revision and lifecycle hooks 
+
+create launch configuration ---- (iam role) code deploy ec2 profile 
+user data ---- war file deploy code .txt
+crate auto scaling group attach with instance 
+code deploy----- choose auto scaling group
+
+Automation with lambda 
+------------------------
+
+creating trigger ----- sns topic
+
+AMAZON ECS
+----------
+
+containe instance iam role -- myrole 
+echo ECS_CLUSTER=your_cluster_name >> /etc/ecs/ecs.config
+
+if cluster instance need to be increase or decrease --- scaleup instances
+task defination ---- taskdefination name --- taskrole --- configure via jason -- jason format paste thr
+
+scheduling tasks in ECS
+------------------------
+scheduling services in ECS  
+
+---------------------------
+like wordpress,sql
+external link
+
+Ecs load balancing
+___________________
+
+create advanced load balance attch with ecs instance 
+
+awsconsole--loadbalancer-targetgroups
+
+service autoscaling
+
+Elastic Beanstalk
+------------------
+
+eb init ---- from bash
+eb deploy
+
+dployment pipeline eb cli to git 
+---------------------------------
+git add all
+git commit
+git push orgin master 
+
+
+code commit
+-----------
+
+create group 
+
+attach policy---awsmanaged policys--code commit fullaccess----iamsshkey, read only access,
+
+
+user credential---upload ---- ssh key gen code to copy to here -- caz ssh key connection to the server 
+
+under ./ssh directroy create file name config 
+
+
+lambda
+===========================================================================================
+
+import boto3
+region = 'us-west-1'
+instances = ['i-12345cb6de4f78g9h', 'i-08ce9b2d7eccf6d26']
+ec2 = boto3.client('ec2', region_name=region)
+
+def lambda_handler(event, context):
+    ec2.stop_instances(InstanceIds=instances)
+    print('stopped your instances: ' + str(instances))
+
+
+
+import boto3
+region = 'us-west-1'
+instances = ['i-12345cb6de4f78g9h', 'i-08ce9b2d7eccf6d26']
+ec2 = boto3.client('ec2', region_name=region)
+
+def lambda_handler(event, context):
+    ec2.start_instances(InstanceIds=instances)
+    print('started your instances: ' + str(instances))
+
+
+volume backup
+=============
+
+# Backup all volumes all regions
+# Skip those volumes with tag of Backup=No
+
+import boto3
+
+def lambda_handler(event, context):
+    ec2 = boto3.client('ec2')
+    
+    # Get list of regions
+    regions = ec2.describe_regions().get('Regions',[] )
+
+    # Iterate over regions
+    for region in regions:
+        print "Checking region %s " % region['RegionName']
+        reg=region['RegionName']
+
+        # Connect to region
+        ec2 = boto3.client('ec2', region_name=reg)
+    
+        # Get all volumes in all regions  
+        result = ec2.describe_volumes()
+        
+        for volume in result['Volumes']:
+            
+            backup = 'Yes'
+            
+            # Get volume tag of Backup if it exists
+            for tag in volume['Tags']:
+                if tag['Key'] == 'Backup':
+                    backup = tag.get('Value')
+                    
+            # Skip volume if Backup tag is No
+            if backup == 'No':
+                break
+            
+            print "Backing up %s in %s" % (volume['VolumeId'], volume['AvailabilityZone'])
+        
+            # Create snapshot
+            result = ec2.create_snapshot(VolumeId=volume['VolumeId'],Description='Created by Lambda backup function ebs-snapshots')
+        
+            # Get snapshot resource 
+            ec2resource = boto3.resource('ec2', region_name=reg)
+            snapshot = ec2resource.Snapshot(result['SnapshotId'])
+        
+            instance_name = 'N/A'
+            
+            # Fetch instance ID
+            instance_id = volume['Attachments'][0]['InstanceId']
+            
+            # Get instance object using ID
+            result = ec2.describe_instances(InstanceIds=[instance_id])
+            
+            instance = result['Reservations'][0]['Instances'][0]
+            
+            print instance
+            
+             # Find name tag for instance
+            if 'Tags' in instance:
+                for tags in instance['Tags']:
+                    if tags["Key"] == 'Name':
+                        instance_name = tags["Value"]
+            
+            # Add volume name to snapshot for easier identification
+            snapshot.create_tags(Tags=[{'Key': 'Name','Value': instance_name}])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+

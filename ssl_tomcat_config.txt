@@ -1,0 +1,85 @@
+https://tecadmin.net/configure-ssl-certificate-in-tomcat/
+
+ <Connector port="8443" protocol="HTTP/1.1"
+                connectionTimeout="20000"
+                redirectPort="8443"
+                SSLEnabled="true"
+                scheme="https"
+                secure="true"
+                sslProtocol="TLS"
+                keystoreFile="/etc/pki/keystore"
+                keystorePass="_password_" />
+
+  <Connector port="8443" protocol="HTTP/1.1"
+                connectionTimeout="20000"
+                redirectPort="8443"
+                SSLEnabled="true"
+                scheme="https"
+                secure="true"
+                sslProtocol="TLS"
+                keystoreFile="/data/utilities/UBD5RFISSBAP01.fisclient.local.jks"
+                keystorePass="Admin@321" />
+
+
+working code of ssl tomcat
+
+ <Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+     89                maxThreads="150" SSLEnabled="true">
+     90         <SSLHostConfig>
+     91             <Certificate certificateKeystoreFile="/data/utilities/UBD5RFISSBAP01.fisclient.local.jks"
+     92                          certificateKeystorePassword="Password@123"
+     93                          type="RSA" />
+
+
+      <!--
+    <Connector port="8443" protocol="org.apache.coyote.http11.Http11AprProtocol"
+               maxThreads="150" SSLEnabled="true" >
+        <UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol" />
+        <SSLHostConfig>
+            <Certificate certificateKeyFile="conf/localhost-rsa-key.pem"
+                         certificateFile="conf/localhost-rsa-cert.pem"
+                         certificateChainFile="conf/localhoscdt-rsa-chain.pem"
+                         type="RSA" />
+        </SSLHostConfig>
+    </Connector>
+    -->
+        <Connector port="443" protocol="HTTP/1.1"
+                connectionTimeout="20000"
+                redirectPort="8443"
+                SSLEnabled="true"
+                scheme="https"
+                secure="true" >
+          <SSLHostConfig>
+                sslProtocol="SSLv2Hello,SSLv3,TLSv1,TLSv1.1,TLSv1.2"
+                keystoreFile="/data/utilities/UBD5RFISSBAP01.fisclient.local.jks"
+                keystorePass="Admin@321"
+               </SSLHostConfig>
+  </Connector>
+
+
+                /data/utilities/UBD5RFISSBAP01.fisclient.local.jks
+
+
+                http://ubd5rfissbap01.fisclient.local:8080/jenkins/
+
+                https://ubd5rfissbap01.fisclient.local:8443/jenkins/
+
+                nohup java -jar jenkins.war -httpPort=8080 & 
+
+- find:
+    paths: "/var/tmp"
+    age: "3600"
+    age_stamp: atime
+    recurse: yes
+
+echo $JAVA_HOME
+
+openssl pkcs12 -export -out certificate.pfx -inkey server.key -in server.crt -certfile ca.crt
+keytool -importkeystore -srckeystore certificate.pfx -srcstoretype pkcs12 -destkeystore mtmkeys.jks -deststorepass Test123
+
+
+
+/etc/pki/java/cacerts
+
+/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.292.b10-1.el7_9.x86_64/jre/lib/security/cacerts
+keytool -importkeystore -srckeystore UBD5RFISSBAP01.fisclient.local.pfx -srcstoretype pkcs12 -destkeystore UBD5RFISSBAP01.fisclient.local.jks -deststoretype jks

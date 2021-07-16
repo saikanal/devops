@@ -1,0 +1,32 @@
+devops work flow 
+jenkins work flow 
+pull request
+ansible tags
+ansibe include
+
+microservice
+----------------
+run
+command 
+entrypoint
+
+aws configure
+ssl termination
+role
+aws rout53 and routin policy critieria
+s3 static web page 
+a record 
+efs
+standard load balancer vs application load balance and two type of routing policy
+instance autosssign ip
+packet flow gateway to instance
+
+
+
+tee
+strice
+bootable script
+$0 -- mention script
+$# --- expnad the arugument like $1,$2
+ksh shell
+nginix

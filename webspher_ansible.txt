@@ -1,0 +1,165 @@
+webshper and ansible 
+
+sed -i 's/.*/("&")/' t2.txt
+
+AdminApplication.uninstallApplication("WebCSR-7_4_2_164376_war")
+
+
+- debug:
+            var: old_app.stdout
+
+export CELL_NAME=`ls $WAS_HOME/profiles/$WAS_PRF/config/cells/`
+export app_installed_loc=$WAS_HOME/profiles/$WAS_PRF/installedApps/$CELL_NAME
+
+
+
+-lang jython -c 
+
+
+/opt/IBM/WebSphere/AppServer/profiles/UI2/bin/wsadmin.sh  -lang jython << EOF
+import os
+AdminApp.uninstall('WebCSR-7_4_2_219569_war.ear')
+AdminConfig.save()
+
+EOF
+
+/opt/IBM/WebSphere/AppServer/profiles/UI2/bin/wsadmin.sh  -lang jython << EOF
+import os
+AdminApp.install('/tmp/WebCSR-7_4_2_164376_war.ear','[-node lsbtpfisblr01Node04Cell -cell lsbtpfisblr01Node04Cell -server localhost]')
+AdminConfig.save()
+
+EOF
+
+AdminApp.install('/tmp/WebCSR-7_4_2_164376_war.ear', ['-appname WebCSR-7_4_2_164376_war -installed.ear.destination /opt/IBM/WebSphere/AppServer/profiles/UI2/installedApps/lsbtpfisblr01Node04Cell -contextroot WebCSR -MapWebModToVH', [['.*', '.*', 'default_host']]])
+
+
+
+
+
+
+webspher install
+   print "\n############# Deployment of WebCSR application is started #############\n"
+                print "#######################################################################\n\n"
+                AdminApp.install(str1, ['-appname ${csr_app} -installed.ear.destination ${app_installed_loc} -contextroot /${csr_ctxroot} -MapWebModToVH', [['.*', '.*', 'default_host']]])
+
+
+
+
+
+
+
+ cond_val == 3:
+                print "\n############# Deployment of WebCSR application is started #############\n"
+                print "#######################################################################\n\n"
+                AdminApp.install(str1, ['-appname ${csr_app} -installed.ear.destination ${app_installed_loc} -contextroot /${csr_ctxroot} -MapWebModToVH', [['.*', '.*', 'default_host']]])
+                AdminConfig.save()
+        # End of If loop related WebCSR applicaiton
+        # If loop to deploy PDTeller application
+
+/opt/IBM/WebSphere/AppServer/profiles/UI2/config/cells/lsbtpfisblr01Node04Cell/applications/WebCSR-7_4_2_164376_war.ear/deployments/WebCSR-7_4_2_164376_war/META-INF
+ <display-name>WebCSR-7_4_2_164376_war</display-name>
+    <module>
+        <web>
+            <web-uri>WebCSR-7.4.2.164376.war</web-uri>
+            <context-root>/WebCSR</context-root>
+        </web>
+    </module>
+</application>
+
+
+
+sed '3 s/webcsr/WebCSR/' undeplo
+
+print app
+
+/tmp/deploy/oldrepo/WebCSR-7_4_2_164376_war.ear
+
+
+
+
+ shell:  "pushd /opt/IBM/WebSphere/AppServer/profiles/UI2/config/cells/lsbtpfisblr01Node04Cell/applications/WebCSR*/ && ls && cp -r WebCSR* /tmp/deploy/oldrepo"
+          tags: ['war']
+
+
+
+
+
+
+
+
+{{ .join((')')) }}
+
+
+
+
+
+
+
+
+
+ansible ------- final
+
+ - name: prepare environment to undeploy
+          lineinfile:
+             path: /tmp/deploy/copyversion.sh
+             regexp: '^hi='
+             line: 'hi={{ user_data }}'
+
+        - name: prepare environment to undeploy
+          lineinfile:
+             path: /tmp/deploy/undeploy.sh
+             regexp: '^AdminApp.uninstall()'
+             insertafter: '^AdminApp.uninstall'
+             line: AdminApp.uninstall({{ user_data }})
+			 
+			 
+			 
+			 
+			  export war_ear_array=`echo "$str1_tmp"`
+                export new_appnames_array=`echo "$str2_tmp"`
+                export prvs_earorwar_array=`echo "$str3_tmp"`
+                export cond_values_array=`echo "$str4_tmp"`
+                export old_appnames_array=`echo "$str5_tmp"`
+				
+				
+				
+				import os
+AdminApp.install('/tmp/WebCSR-7_4_2_164376_war.ear', ['-appname WebCSR-7_4_2_164376_war -installed.ear.destination /opt/IBM/WebSphere/AppServer/profiles/UI2/installedApps/lsbtpfisblr01Node04Cell -contextroot WebCSR -MapWebModToVH', [['.*', '.*', 'default_host']]])
+
+AdminConfig.save()
+
+
+
+
+
+
+reuse------------------------------------
+#/tmp/deploy/undeploy.sh
+
+`
+##sed -i '3 s/\([WebCSR*\)]/\[('$appname\)]/g' /tmp/deploy/t2.txt
+
+#/tmp/deploy/undeploy.sh
+
+#ls $source/ > /tmp/deploy/t1.txt
+
+#cut -d "." -f 1 /tmp/deploy/t1.txt > t2.txt
+
+#cut -d "." -f 1 /tmp/deploy/t1.txt > /tmp/testout.txt
+#version= expr $(cut -d "." -f 1 /tmp/deploy/t1.txt)
+
+#echo $version
+
+
+#hi=WebCSR-7_4_2_164376_war
+#sed -i '3 /WebCSR*/war)/' /tmp/deploy/undeploy.sh
+#sed  '3 s/()/'$hi'/' /tmp/deploy/undeploy.sh
+
+
+
+
+#appname= echo "$i" |cut -d "." -f 1 | rev |cut -c 5- | rev
+
+#/tmp/deploy/undeploy.sh
+
+
